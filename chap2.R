@@ -6,8 +6,8 @@
 # 2-1.2.1 remove the data that age is 10+, 10++, and ?
 # 2-1.2.2 fit the von Bertalanffy growth curve and estimate parameters; k and t0.
 # 
-# 2-1.3.1 make the dataframe including length, age, number, and freq. within age class
-# 2-1.3.2 make the tables of number at age and age composition
+# 2-1.3.1 make the tables of number at age
+# 2-1.3.2 make the tables of age composition
 
 
 # load the packages -------------------------------------------------------
@@ -20,15 +20,22 @@ require(ggplot2)
 require(investr)
 require(stringr)
 
-# set working directory -----------------------------------------------------------
+# please change here -----------------------------------------------------------
+# set working directory
 setwd("/Users/yk/Dropbox/キチジ/森川さん由来/R01d_キチジ資源評価")
+
+# how many years ago
+# e.g. wanna analyze the data of 2018 and now is 2020, then n = 2
+n = 2
 
 
 # 2=1 estimate the number at age ------------------------------------------
 # 2-1.1 make the age-length key -------------------------------------------
 
 # load the data
-df = read.xlsx("1_2018年キチジ年齢分解.xlsx", 1)
+year = as.numeric(str_sub(Sys.Date(), 1, 4))-n
+filename = paste0("1_", year, "年キチジ年齢分解.xlsx")
+df = read.xlsx(filename, 1)
 df = df[, c(1,3)]
 colnames(df) = c("length_cm", "age")
 summary(df)
@@ -56,7 +63,7 @@ summary(fit)
 plotFit(fit, interval = "prediction", ylim = c(0, 250), pch = 19, col.pred = 'light blue', shade=T)
 
 
-# 2-1.3.1 make the dataframe including length, age, number, and freq. within age class
+# 2-1.3.1 make the tables of number at age
 # use 10+ and 10++
 head(df)
 df3 = df %>% select(length_mm, age)
@@ -96,3 +103,20 @@ sum = ddply(NAA, .(length_cate), summarize, sum = sum(number))
 NAA2 = NAA %>% tidyr::spread(key = length_cate, value = number)
 sum2 = sum %>% tidyr::spread(key = length_cate, value = sum) %>% mutate(age = "total")
 number_at_age = rbind(NAA2, sum2)
+write.csv(number_at_age, "number_at_age.csv", fileEncoding = "CP932")
+
+# 2-1.3.2 make the tables of age composition
+
+
+
+
+
+
+
+
+
+
+
+
+
+
