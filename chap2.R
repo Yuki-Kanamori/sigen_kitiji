@@ -1,8 +1,7 @@
 
 # summary -----------------------------------------------------------------
-# 1.  aging (CNN?)
-
 # 2-1 estimate the number at age
+#
 # 2-1.2  make the age-length key
 # 2-1.2.1 remove the data that age is 10+, 10++, and ?
 # 2-1.2.2 fit the von Bertalanffy growth curve and estimate parameters; k and t0.
@@ -24,8 +23,8 @@ require(investr)
 setwd("/Users/yk/Dropbox/キチジ/森川さん由来/R01d_キチジ資源評価")
 
 
-# 2.1 estimate the number at age ------------------------------------------
-# 2.1.1 make the age-length key -------------------------------------------
+# 2=1 estimate the number at age ------------------------------------------
+# 2-1.1 make the age-length key -------------------------------------------
 
 # load the data
 df = read.xlsx("1_2018年キチジ年齢分解.xlsx", 1)
@@ -37,13 +36,13 @@ summary(df)
 
 
 
-# 2.1.1.1 remove the data that age is 10+, 10++, and ? --------------------
+# 2-1.1.1 remove the data that age is 10+, 10++, and ? --------------------
 df = df %>% mutate(length_mm = length_cm*10, age_num = as.numeric(age)) #10+, 10++, and ? turned NA
 summary(df)
 df2 = na.omit(df)
 
 
-# 2.1.1.2 fit the von Bertalanffy growth curve and estimate params --------
+# 2-1.1.2 fit the von Bertalanffy growth curve and estimate params --------
 # Lt = L_max*(1-e^(-K(t-t0)))
 mode(df2$age_num)
 mode(df2$length_mm)
@@ -56,3 +55,4 @@ summary(fit)
 plotFit(fit, interval = "prediction", ylim = c(0, 250), pch = 19, col.pred = 'light blue', shade=T)
 
 
+# 2-1.3.1 make the dataframe including length, age, number, and freq. within age class
