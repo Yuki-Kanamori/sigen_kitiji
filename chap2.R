@@ -70,7 +70,7 @@ naa = ddply(df3, .(length_mm, age3), summarize, number = sum(count))
 length_mm = rep(seq(min(df3$length_mm), max(df3$length_mm)), length(unique(df3$age3))+1) #2893rows
 age_num = rep(0:max(df3$age3), each = length(unique(length_mm)))
 tag = data_frame(length_mm = length_mm, age_num = age_num)
-tag = tag %>% mutate(length_cate = str_sub(tag$length_mm, 1,1))
+tag = tag %>% mutate(length_cate = ifelse(length_mm < 100, str_sub(tag$length_mm, 1, 1), str_sub(tag$length_mm, 1, 2)))
 
 head(naa)
 head(tag)
@@ -81,23 +81,18 @@ tag = tag %>% dplyr::rename(age = age_num)
 naa2 = merge(naa, tag, by = c("length_mm", "age"), all = T)
 naa2$number = ifelse(is.na(naa2$number), 0, naa2$number)
 summary(naa2)
-mode(naa2$length_cate)
-
-
-
-
-NAA = naa2 %>% group_by(age, length_cate) %>% summarize(count = n())
-
-
-
-naa2$length_cate = as.factor(naa2$length_cate)
-mode(naa2$length_cate)
-
 NAA = ddply(naa2, .(age, length_cate), summarize, number = sum(number))
+NAA$length_cate = as.numeric(NAA$length_cate)
+summary(NAA)
 
+# add the data without NAA
+add = NAA %>% filter(length_cate < min(NAA$length_cate)*2-1)
+add = add %>% mutate(length_cate = rep(1:(min(add$length_cate)-1)), number = 0)
+NAA = rbind(add, NAA)
+NAA = NAA %>% arrange(length_cate, age) 
+#%>% mutate(age = ifelse(age == 10, "10+", NAA$age))
+sum = ddply(NAA, .(length_cate), summarize, sum = sum(number))
 
-
-# naa = df3 %>% group_by(length_mm, age) %>% summarize(number = n())
-naa = count(df3, "length_mm", "age")
-
-naa = ddply(df3, .(length_mm, age), summarize, number = sum)
+NAA2 = NAA %>% tidyr::spread(key = length_cate, value = number)
+sum2 = sum %>% tidyr::spread(key = length_cate, value = sum) %>% mutate(age = "total")
+number_at_age = rbind(NAA2, sum2)
