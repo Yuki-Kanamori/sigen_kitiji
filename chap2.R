@@ -36,6 +36,7 @@ require(stringr)
 # please change here -----------------------------------------------------------
 # set working directory
 setwd("/Users/yk/Dropbox/業務/キチジ太平洋北部/森川さん由来/R01d_キチジ資源評価")
+setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/森川さん由来/R01d_キチジ資源評価")
 
 # how many years ago
 # e.g. wanna analyze the data of 2018 and now is 2020, then n = 2
@@ -129,9 +130,18 @@ write.csv(age_composition, "age_composition.csv", fileEncoding = "CP932")
 
 
 
+# step 5 年齢別資源微数の算出 ---------------------------------------------
+len_num = read.csv("length_number.csv")
+head(len_num)
+colnames(len_num) = c("length_cate", "number")
+summary(len_num)
+AC2 = left_join(AC, len_num, by = "length_cate") %>% mutate(bisu = freq*number)
+num_ac2 = ddply(AC2, .(length_cate), summarize, total = sum(number)) #多分計算間違い．あとカテ4に値はいらん
 
+number_at_age2 = AC2 %>% select(length_cate, age, bisu) %>% tidyr::spread(key = length_cate, value = bisu)
+num_ac2 = num_ac2 %>% tidyr::spread(key = length_cate, value = total) %>% mutate(age = "total")
 
-
+number_at_age2 = rbind(number_at_age2, num_ac2)
 
 
 
