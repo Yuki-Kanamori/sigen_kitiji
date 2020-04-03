@@ -48,3 +48,32 @@ setwd("/Users/yk/Dropbox/業務/キチジ太平洋北部/森川さん由来/R
 # e.g. wanna analyze the data of 2018 and now is 2020, then n = 2
 n = 2
 
+
+# 3-1 図4: 漁場の空間分布 --------------------------------------------------------------
+# とりあえず『4_キチジ漁績〜.xlsx』からデータを読むようなコードにしておき，後から2-3-2から直接求められるように修正を加える
+df_gj = read.xlsx("4_キチジ漁績2006-2018.xlsx", 21) %>% filter(魚種コード == 408) %>% select(漁区, 漁獲量の合計) #日本語入力のためか，renameが使えない
+colnames(df_gj) = c("AREA", "abundance")
+head(df_gj)
+summary(df_gj)
+
+# 緯度経度データ
+lonlat = read.csv("area_lonlat.csv") 
+lonlat = lonlat %>% mutate(lon = LON%/%1+LON%%1/60, lat = LAT%/%1+LAT%%1/60) #10進法を60進法に変換
+
+df_gj = left_join(df_gj, lonlat, by = "AREA") %>% na.omit()
+df_gj2 = ddply(df_gj, .(lon, lat), summarize, total = sum(abundance)*0.001) #ここが違う．そもそもnが違うので，平均をとる必要があるのでは？
+summary(df_gj2)
+
+
+
+
+
+
+
+
+
+
+
+# 3-6 補足図3-1 --------------------------------------------------------------
+
+
