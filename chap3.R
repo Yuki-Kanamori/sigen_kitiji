@@ -37,6 +37,8 @@ require(tidyr)
 require(dplyr)
 require(plyr)
 require(ggplot2)
+require(maps)
+require(mapdata)
 require(investr)
 require(stringr)
 
@@ -64,13 +66,23 @@ df_gj = left_join(df_gj, lonlat, by = "AREA") %>% na.omit()
 df_gj2 = ddply(df_gj, .(lon, lat), summarize, total = sum(abundance)*0.001) #ここが違う．そもそもnが違うので，平均をとる必要があるのでは？
 summary(df_gj2)
 
-
-
-
-
-
-
-
+# mapping
+unique(map_data("world")$region)
+map = ggplot() + coord_fixed() + xlab("Longitude") + ylab("Latitude")
+world_map = map_data("world")
+region2 = subset(world_map, world_map$region == "Japan")
+local_map = map + geom_polygon(data = region2, aes(x = long, y = lat, group = group), colour = "black", fill = "white") + coord_map(xlim = c(xlim = c(min(df_gj2$lon)-1), max(df_gj2$lon)+5), ylim = c(min(df_gj2$lat)-1, max(df_gj2$lat)+1))
+th = theme(panel.grid.major = element_blank(),
+               panel.grid.minor = element_blank(),
+               axis.text.x = element_blank(),
+               axis.text.y = element_blank(),
+               axis.title.x = element_text(size = rel(1.5)),
+               axis.title.y = element_text(size = rel(1.5)),
+               strip.text = element_text(size = rel(1.3)),
+               legend.title = element_text(size = 13))
+p = geom_point(data = df_gj2, aes(x = lon, y = lat, colour = total), shape = 15, size = 2)
+c = scale_colour_gradientn(colours = c("black", "blue", "cyan", "green", "yellow", "orange", "red", "darkred"))
+fig = local_map+theme_bw()+th+p+c+labs(title = "", x = "Longitude", y = "Latitude", colour = "")
 
 
 
