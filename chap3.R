@@ -59,12 +59,18 @@ head(df_gj)
 summary(df_gj)
 
 # 緯度経度データ
-lonlat = read.csv("area_lonlat.csv") 
+lonlat = read.csv("area_lonlat.csv")
+summary(lonlat)
 lonlat = lonlat %>% mutate(lon = LON%/%1+LON%%1/60, lat = LAT%/%1+LAT%%1/60) #10進法を60進法に変換
 
 df_gj = left_join(df_gj, lonlat, by = "AREA") %>% na.omit()
 df_gj2 = ddply(df_gj, .(lon, lat), summarize, total = sum(abundance)*0.001) #ここが違う．そもそもnが違うので，平均をとる必要があるのでは？
 summary(df_gj2)
+
+g = ggplot(df_gj2, aes(x = lon, y = lat))
+p = geom_point()
+c = scale_colour_gradientn(colours = c("black", "blue", "cyan", "green", "yellow", "orange", "red", "darkred"))
+g+p+c
 
 # mapping
 unique(map_data("world")$region)
@@ -87,5 +93,8 @@ fig = local_map+theme_bw()+th+p+c+labs(title = "", x = "Longitude", y = "Latitud
 
 
 # 3-6 補足図3-1 --------------------------------------------------------------
+
+
+
 
 
