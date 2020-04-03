@@ -22,7 +22,7 @@ require(stringr)
 
 # please change here -----------------------------------------------------------
 # set working directory
-setwd("/Users/yk/Dropbox/キチジ/森川さん由来/R01d_キチジ資源評価")
+setwd("/Users/yk/Dropbox/業務/キチジ太平洋北部/森川さん由来/R01d_キチジ資源評価")
 
 # how many years ago
 # e.g. wanna analyze the data of 2018 and now is 2020, then n = 2
@@ -92,12 +92,11 @@ NAA = ddply(naa2, .(age, length_cate), summarize, number = sum(number))
 NAA$length_cate = as.numeric(NAA$length_cate)
 summary(NAA)
 
-# add the data without NAA
+# add the data that NAA does not have
 add = NAA %>% filter(length_cate < min(NAA$length_cate)*2-1)
 add = add %>% mutate(length_cate = rep(1:(min(add$length_cate)-1)), number = 0)
 NAA = rbind(add, NAA)
 NAA = NAA %>% arrange(length_cate, age) 
-#%>% mutate(age = ifelse(age == 10, "10+", NAA$age))
 sum = ddply(NAA, .(length_cate), summarize, sum = sum(number))
 
 NAA2 = NAA %>% tidyr::spread(key = length_cate, value = number)
