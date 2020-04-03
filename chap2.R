@@ -1,13 +1,26 @@
 
-# summary -----------------------------------------------------------------
-# 2-1 estimate the number at age
-#
-# 2-1.2  make the age-length key
-# 2-1.2.1 remove the data that age is 10+, 10++, and ?
-# 2-1.2.2 fit the von Bertalanffy growth curve and estimate parameters; k and t0.
+# SUMMARY -----------------------------------------------------------------
+# 2-1  成長曲線の作成，ALKの作成，および年齢別資源微数の算出 
+#      (引き継ぎ資料の2-1部分)
+# step 1 成長曲線の前処理（成長曲線に不必要な10+, 10++, and ?のデータを除去する）
+# step 2 von Bertalanffy growth curveにfittingし，パラメータ（k and t0）の推定を行う
+# step 3 ALKの作成 (number at age)    ※表がcsvで出てきます
+# step 4 ALKの作成 (age composition)  ※表がcsvで出てきます
+# step 5 年齢別資源微数の算出
 # 
-# 2-1.3.1 make the tables of number at age
-# 2-1.3.2 make the tables of age composition
+# 
+# 2-2  年齢別資源体重の算出
+#      (引き継ぎ資料の2-2部分) 
+# step 1 
+# 
+# 
+# 2-3  漁獲量まとめ
+#      (引き継ぎ資料の2-3部分)
+# step 1 魚種別集計
+# step 2 県から提出されたデータの集計
+# 
+# 
+# 2-4  資源量計算とABCの算定
 
 
 # load the packages -------------------------------------------------------
