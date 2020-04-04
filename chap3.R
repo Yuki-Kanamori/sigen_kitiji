@@ -130,8 +130,26 @@ tai_miya2 = left_join(tai_miya2, weight, by = "taityo") %>% mutate(total_weight 
 # (1-D) ---------------------------------------------------------
 yatyo = read.csv("宮城_野帳.csv", fileEncoding = "CP932")
 head(yatyo)
-yatyo = yatyo %>% dplyr::rename(ymd = 調査年月日, meigara = 銘柄, n_hako = 箱数) %>% gather(key = iran, value = zentyo, 4:ncol(yatyo)) %>% select(-iran) %>%mutate(year = as.numeric(str_sub(ymd, 1, 4)), month = as.numeric(str_sub(ymd, 6,7)), gyokaku_kg = n_hako*7, gyokaku_n = meigara*n_hako) %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"))
+# 28*171 = 4788
+yatyo = yatyo %>% dplyr::rename(ymd = 調査年月日, meigara = 銘柄, n_hako = 箱数) %>% tidyr::gather(key = no, value = zentyo, 4:31) %>% mutate(year = as.numeric(str_sub(ymd, 1, 4)), month = as.numeric(str_sub(ymd, 6, 7)), gyokaku_kg = n_hako*7, gyokaku_n = meigara*n_hako) %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12")) %>% na.omit()
+
+rand = runif(nrow(yatyo)*100) %>% matrix(ncol = 100)
+loop = matrix(NA, ncol = 101, nrow = nrow(yatyo))
+loop[, 1] = yatyo$zentyo
+for(i in 1:100){
+  loop[, i+1] = (0.8131*(loop[, 1]+rand[, i])+0.16238)%/%1
+}
+loop = loop[, -1] %>% as.data.frame() %>% mutate(year = yatyo$year, season = yatyo$season, month = yatyo$month) %>% gather(key = times, value = taityo, 1:100)
+loop2 = loop %>% group_by(year, season, month, times, taityo) %>% dplyr::summarize(count = n())
+m_loop2 = loop2 %>% group_by(year, season, taityo) %>% dplyr::summarize(mean = mean(count))
+
+sokutei_n = yatyo %>% group_by(year, season, zentyo) %>% dplyr::summarize(count = n())
+
+
 sokutei_n = yatyo %>% group_by(ymd) %>% dplyr::summarize(count = n())
+total_gyokaku_n = yatyo %>% group_by(ymd) %>% dplyr::summarize(total = sum(gyokaku_n)) %>% left_join(total_gyokaku_n, sokutei_n, by = ymd)
+
+
 yatyo = left_join(yatyo, sokutei_n, by = "ymd") %>% mutate(yatyo, hikinobasi = gyokaku_n/count, taityo = (0.8131*zentyo+runif(nrow(yatyo)))%/%1)
 
 
