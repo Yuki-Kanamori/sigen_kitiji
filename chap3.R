@@ -130,6 +130,7 @@ tai_miya2 = left_join(tai_miya2, weight, by = "taityo") %>% mutate(total_weight 
 # (1-D) ---------------------------------------------------------
 yatyo = read.csv("宮城_野帳.csv", fileEncoding = "CP932")
 head(yatyo)
+summary(yatyo)
 # 28*171 = 4788
 yatyo = yatyo %>% dplyr::rename(ymd = 調査年月日, meigara = 銘柄, n_hako = 箱数) %>% tidyr::gather(key = no, value = zentyo, 4:31) %>% mutate(year = as.numeric(str_sub(ymd, 1, 4)), month = as.numeric(str_sub(ymd, 6, 7)), gyokaku_kg = n_hako*7, gyokaku_n = meigara*n_hako) %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12")) %>% na.omit()
 
@@ -141,21 +142,23 @@ for(i in 1:100){
 }
 loop = loop[, -1] %>% as.data.frame() %>% mutate(year = yatyo$year, season = yatyo$season, month = yatyo$month) %>% gather(key = times, value = taityo, 1:100)
 loop2 = loop %>% group_by(year, season, month, times, taityo) %>% dplyr::summarize(count = n())
-m_loop2 = loop2 %>% group_by(year, season, taityo) %>% dplyr::summarize(mean = mean(count))
+m_sosei = loop2 %>% group_by(year, season, taityo) %>% dplyr::summarize(mean = mean(count))
 
-sokutei_n = yatyo %>% group_by(year, season) %>% dplyr::summarize(count = n())
-total_gyokaku_n = yatyo %>% group_by(year, season) %>% dplyr::summarise(sum = sum(gyokaku_n)) 
-total_gyokaku_n = left_join(total_gyokaku_n, sokutei_n, by = c("year", 'season')) 
-total_gyokaku_n = total_gyokaku_n %>% mutate(rate = sum/count)
+sokutei_n = nrow(yatyo)
+total_gyokaku_n = sum(yatyo$gyokaku_n)
+rate = total_gyokaku_n/sokutei_n
 
-m_loop2 = left_join(m_loop2, total_gyokaku_n, by = c("year", "season"))
-length_comp = m_loop2 %>% mutate(pred = mean*rate)
-plot(length_comp, x = length_comp$taityo, y = length_comp$pred)
+total_sosei = m_sosei %>% mutate(rate = rate) %>% mutate(total = mean*rate)
 
-g = ggplot(length_comp, aes(x = taityo, y = pred))
-b = geom_bar()
+# figures
+g = ggplot(total_sosei, aes(x = taityo, y = total), stat = "identity")
+b = geom_bar(colour = "gray50", stat = "identity")
 f = facet_wrap(~ season, ncol = 1)
-g+h+f
+g+b+f
+
+
+# (1-E) ---------------------------------------------------------
+
 
 
 
