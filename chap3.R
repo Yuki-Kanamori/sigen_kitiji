@@ -143,31 +143,20 @@ loop = loop[, -1] %>% as.data.frame() %>% mutate(year = yatyo$year, season = yat
 loop2 = loop %>% group_by(year, season, month, times, taityo) %>% dplyr::summarize(count = n())
 m_loop2 = loop2 %>% group_by(year, season, taityo) %>% dplyr::summarize(mean = mean(count))
 
-sokutei_n = yatyo %>% group_by(year, season, zentyo) %>% dplyr::summarize(count = n())
+sokutei_n = yatyo %>% group_by(year, season) %>% dplyr::summarize(count = n())
+total_gyokaku_n = yatyo %>% group_by(year, season) %>% dplyr::summarise(sum = sum(gyokaku_n)) 
+total_gyokaku_n = left_join(total_gyokaku_n, sokutei_n, by = c("year", 'season')) 
+total_gyokaku_n = total_gyokaku_n %>% mutate(rate = sum/count)
 
+m_loop2 = left_join(m_loop2, total_gyokaku_n, by = c("year", "season"))
+length_comp = m_loop2 %>% mutate(pred = mean*rate)
+plot(length_comp, x = length_comp$taityo, y = length_comp$pred)
 
-sokutei_n = yatyo %>% group_by(ymd) %>% dplyr::summarize(count = n())
-total_gyokaku_n = yatyo %>% group_by(ymd) %>% dplyr::summarize(total = sum(gyokaku_n)) %>% left_join(total_gyokaku_n, sokutei_n, by = ymd)
+g = ggplot(length_comp, aes(x = taityo, y = pred))
+b = geom_bar()
+f = facet_wrap(~ season, ncol = 1)
+g+h+f
 
-
-yatyo = left_join(yatyo, sokutei_n, by = "ymd") %>% mutate(yatyo, hikinobasi = gyokaku_n/count, taityo = (0.8131*zentyo+runif(nrow(yatyo)))%/%1)
-
-
-
-
-
-
-summary(test)
-test = test %>% mutate(month = ifelse(test$month < 0, test$month%%1, test$month))
-test2 = test %>% filter(test$month < 0)
-
-
-%>% mutate(lab = str_detect(x, pattern="ko"))
-if()
-
-
-summary(test)
-%>% mutate(num = as.numeric(ymd))
 
 
 
