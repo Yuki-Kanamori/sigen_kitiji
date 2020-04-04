@@ -148,19 +148,25 @@ sokutei_n = nrow(yatyo)
 total_gyokaku_n = sum(yatyo$gyokaku_n)
 rate = total_gyokaku_n/sokutei_n
 
-total_sosei = m_sosei %>% mutate(rate = rate) %>% mutate(total = mean*rate)
+total_sosei = m_sosei %>% mutate(rate = rate) %>% mutate(total_n = mean*rate)
 
 # figures
-g = ggplot(total_sosei, aes(x = taityo, y = total), stat = "identity")
+g = ggplot(total_sosei, aes(x = taityo, y = total_n), stat = "identity")
 b = geom_bar(colour = "gray50", stat = "identity")
 f = facet_wrap(~ season, ncol = 1)
-g+b+f
+labs = labs(x = "Length", y = "Numbers")
+g+b+f+labs+theme_bw()
 
 
 # (1-E) ---------------------------------------------------------
+kiti = total_sosei %>% mutate(weight = 0.00000531472*((taityo+0.5)*10)^3.30527) %>% mutate(total_weight_kg = (total_n*weight)/1000)
 
+sum_kiti = kiti %>% group_by(season) %>% dplyr::summarize(sum = sum(total_weight_kg))
+total_g_miyagi = g_miya2 %>% group_by(size, season) %>% dplyr::summarize(sum = sum(total))
+rate = left_join(sum_kiti, total_g_miyagi %>% filter(size == "きちじ"), by = "season") %>% mutate(rate = sum.y/sum.x)
 
-
+kiti = left_join(kiti, rate %>% select(season, rate), by = "season")
+kiti = kiti %>% mutate(weight2 = total_total_n*rate.y)
 
 
 # 3-6 補足図3-1 --------------------------------------------------------------
