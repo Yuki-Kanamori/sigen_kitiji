@@ -96,15 +96,8 @@ fig = local_map+theme_bw()+th+p+c+labs(title = "", x = "Longitude", y = "Latitud
 # # 3-2  図9; 漁獲物の体長組成  ------------------------------------------
 setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/森川さん由来/R01d_キチジ資源評価/R01d_キチジVPA")
 
-# g_miya = read_excel("01_18キチジ.xls", sheet = 1, col_names = TRUE, col_types = NULL, na = NA, skip = 0)
-# read_excel(   path,  # Excelのファイルパス名
-#               sheet = 1,  # シート名かシート番号
-#               col_names = TRUE,  # ヘッダの有無
-#               col_types = NULL,  # 列ごとのデータ型を定義。難しいです。
-#               na = "",  # 欠損値をどの文字に置き換えるか 
-#               skip = 0) # 読み飛ばす行数
-# どう頑張っても現状では.xlsファイルはエラーの山で解決不可．
-# とりあえずはシートの内容をコピーしてcsvファイルを作成するか，.xlsを.xlsxに変えてread.xlsx()で読み込むことで対応．              
+
+# (1-B) ---------------------------------------------------------
 g_miya = read.csv("漁獲量_宮城.csv", fileEncoding = "CP932")
 summary(g_miya)
 g_miya = g_miya %>% mutate(ymd = as.Date(g_miya$年月日, format = "%Y/%m/%d")) %>% 
@@ -113,15 +106,14 @@ g_miya = g_miya %>% mutate(ymd = as.Date(g_miya$年月日, format = "%Y/%m/%d"))
   mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"))
 g_miya2 = ddply(g_miya, .(size, year, month, season), summarize, total = sum(mizuage))
 
+
+# (1-C) ---------------------------------------------------------
 tai_miya = read.xlsx("02_キチジ宮城体長組成明細2018.xlsx", 1)
 tai_miya = tai_miya[, 1:26] 
 summary(tai_miya)
-# tai_miya = tai_miya %>% dplyr::rename(ymd = 漁獲年月日, start = 開始の階級値, do = 度数) %>% select(ymd, start, do) %>% mutate(year = as.numeric(str_sub(ymd, 1, 4)), month = as.numeric(str_sub(ymd,5, 6)), day = as.numeric(str_sub(ymd, 7, 8)), rand = runif(nrow(tai_miya))) %>% mutate(taityo = (0.8131*(start+rand)+0.16238)%/%1, season = ifelse(between(month, 1, 6), "1-6", "7-12"))
-# tai_miya2 = tai_miya %>% group_by(year, month, season, taityo) %>% dplyr::summarize(total = sum(do))
 tai_miya = tai_miya %>% dplyr::rename(ymd = 漁獲年月日, start = 開始の階級値, do = 度数) %>% select(ymd, start, do) %>% mutate(year = as.numeric(str_sub(ymd, 1, 4)), month = as.numeric(str_sub(ymd,5, 6)), day = as.numeric(str_sub(ymd, 7, 8))) %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"))
 
 rand = runif(nrow(tai_miya)*10) %>% matrix(ncol = 10)
-# rand = cbind(tai_miya$start, rand)
 
 loop = matrix(NA, ncol = 11, nrow = nrow(tai_miya))
 loop[, 1] = tai_miya$start
@@ -133,7 +125,33 @@ tai_miya2 = loop %>% group_by(year, season, month, taityo) %>% dplyr::summarize(
 
 weight = data_frame(taityo = rep(5:19), weight = c(3.0,5.2,8.4,12.7,18.3,25.5,34.4,45.3,58.5,74.0,92.3,113.5,137.8,165.6,197.1))
 tai_miya2 = left_join(tai_miya2, weight, by = "taityo") %>% mutate(total_weight = number*weight)
- 
+
+
+# (1-D) ---------------------------------------------------------
+yatyo = read.csv("宮城_野帳.csv", fileEncoding = "CP932")
+head(yatyo)
+yatyo = yatyo %>% dplyr::rename(ymd = 調査年月日, meigara = 銘柄, n_hako = 箱数) %>% gather(key = iran, value = zentyo, 4:ncol(yatyo)) %>% select(-iran) %>%mutate(year = as.numeric(str_sub(ymd, 1, 4)), month = as.numeric(str_sub(ymd, 6,7)), gyokaku_kg = n_hako*7, gyokaku_n = meigara*n_hako) %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"))
+sokutei_n = yatyo %>% group_by(ymd) %>% dplyr::summarize(count = n())
+yatyo = left_join(yatyo, sokutei_n, by = "ymd") %>% mutate(yatyo, hikinobasi = gyokaku_n/count, taityo = (0.8131*zentyo+runif(nrow(yatyo)))%/%1)
+
+
+
+
+
+
+summary(test)
+test = test %>% mutate(month = ifelse(test$month < 0, test$month%%1, test$month))
+test2 = test %>% filter(test$month < 0)
+
+
+%>% mutate(lab = str_detect(x, pattern="ko"))
+if()
+
+
+summary(test)
+%>% mutate(num = as.numeric(ymd))
+
+
 
 # 3-6 補足図3-1 --------------------------------------------------------------
 
