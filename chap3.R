@@ -166,7 +166,7 @@ total_g_miyagi = g_miya2 %>% group_by(size, season) %>% dplyr::summarize(sum = s
 rate = left_join(sum_kiti, total_g_miyagi %>% filter(size == "きちじ"), by = "season") %>% mutate(rate = sum.y/sum.x)
 
 kiti = left_join(kiti, rate %>% select(season, rate), by = "season")
-kiti = kiti %>% mutate(weight2 = total_total_n*rate.y)
+kiti = kiti %>% mutate(weight2 = total_n*rate.y)
 
 
 # 3-6 補足図3-1 --------------------------------------------------------------
