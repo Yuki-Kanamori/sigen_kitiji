@@ -125,7 +125,7 @@ tai_miya2 = loop %>% group_by(year, season, month, taityo) %>% dplyr::summarize(
 
 weight = data_frame(taityo = rep(5:19), weight = c(3.0,5.2,8.4,12.7,18.3,25.5,34.4,45.3,58.5,74.0,92.3,113.5,137.8,165.6,197.1))
 tai_miya2 = left_join(tai_miya2, weight, by = "taityo") %>% mutate(total_weight = number*weight)
-
+summary(tai_miya2)
 
 # (1-D) ---------------------------------------------------------
 yatyo = read.csv("宮城_野帳.csv", fileEncoding = "CP932")
@@ -152,9 +152,9 @@ total_sosei = m_sosei %>% mutate(rate = rate) %>% mutate(total_n = mean*rate)
 
 # figures
 g = ggplot(total_sosei, aes(x = taityo, y = total_n), stat = "identity")
-b = geom_bar(colour = "gray50", stat = "identity")
+b = geom_bar(stat = "identity")
 f = facet_wrap(~ season, ncol = 1)
-labs = labs(x = "Length", y = "Numbers")
+labs = labs(x = "Length", y = "Numbers", title = "Kichiji")
 g+b+f+labs+theme_bw()
 
 
