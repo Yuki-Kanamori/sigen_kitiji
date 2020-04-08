@@ -225,7 +225,20 @@ g+b+f+labs+theme_bw()
 # (3) 八戸 ------------------------------------------------------------------
 tai_hati = read.xlsx("04_キチジ八戸漁連2004-2018.xlsx", "みなと2018")
 head(tai_hati)
-tai_hati %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12")) %>% 
+summary(tai_hati)
+tai_hati = tai_hati[, c(1,2,3,5,8,9)]
+colnames(tai_hati) = c('year', 'month', 'fisheries', 'kikaku', 'irisu', 'kg')
+tai_hati = tai_hati %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"), iri_bisu = ifelse(kikaku == 13, 'P', ifelse(kikaku == 7, 'S', str_sub(irisu, -2, -1))))
+summary(tai_hati)
+
+kg = tai_hati %>% mutate(n_iri_bisu = as.numeric(iri_bisu)) %>% group_by(year, season, n_iri_bisu) %>% dplyr::summarize(sum = sum(kg)) %>% mutate(hako = sum/7, gyokaku_bisu = hako*n_iri_bisu)
+
+
+
+
+
+
+
 
 # 3-6 補足図3-1 --------------------------------------------------------------
 
