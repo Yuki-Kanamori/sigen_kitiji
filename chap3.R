@@ -113,6 +113,7 @@ tai_miya = tai_miya[, 1:26]
 summary(tai_miya)
 tai_miya = tai_miya %>% filter(銘柄コード == 91) # 別の種や体長組成の算出に不必要なデータが入っている場合があるため，ここで念のためフィルターをかける
 tai_miya = tai_miya %>% dplyr::rename(ymd = 漁獲年月日, start = 開始の階級値, do = 度数) %>% select(ymd, start, do) %>% mutate(year = as.numeric(str_sub(ymd, 1, 4)), month = as.numeric(str_sub(ymd,5, 6)), day = as.numeric(str_sub(ymd, 7, 8))) %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"))
+# 度数 = 尾数．つまり，「開始の階級値」サイズの個体が度数分だけあったってこと．
 
 set.seed(1)
 rand = runif(nrow(tai_miya)*100) %>% matrix(ncol = 100)
@@ -122,13 +123,13 @@ loop[, 1] = tai_miya$start
 for(i in 1:100){
   loop[, i+1] = (0.8131*(loop[, 1]+rand[, i])+0.16238)%/%1
 }
-loop = loop[, -1] %>% as.data.frame() %>% mutate(year = tai_miya$year, season = tai_miya$season, month = tai_miya$month, do = tai_miya$do) %>% tidyr::gather(key = times, value = taityo, 1:100)
-loop2 = loop %>% group_by(year, season, times, taityo) %>% dplyr::summarize(count = n())
+loop = loop[, -1] %>% as.data.frame() %>% mutate(year = tai_miya$year, season = tai_miya$season, month = tai_miya$month, do = tai_miya$do) %>% tidyr::gather(key = times, value = taityo, 1:100) %>% dplyr::rename(number = do)
+loop2 = loop %>% group_by(year, season, times, taityo) %>% dplyr::summarize(count = sum(number))
 summary(loop2)
 tai_miya2 = loop2 %>% group_by(year, season, taityo) %>% dplyr::summarize(mean = mean(count))
 
-weight = data.frame(taityo = rep(5:19)) %>% mutate(weight = 0.00000531472*((taityo+0.5)*10)^3.30527)
-tai_miya2 = left_join(tai_miya2, weight, by = "taityo") %>% mutate(total_weight = (mean*weight)/1000)
+weight = data.frame(taityo = rep(5:19)) %>% mutate(weight_W = 0.00000531472*((taityo+0.5)*10)^3.30527)
+tai_miya2 = left_join(tai_miya2, weight, by = "taityo") %>% mutate(total_weight_Y = (mean*weight)/1000)
 summary(tai_miya2)
 
 # figures
