@@ -132,9 +132,13 @@ yatyo = read.csv("宮城_野帳.csv", fileEncoding = "CP932")
 head(yatyo)
 summary(yatyo)
 # 28*171 = 4788
+# na.omit -> 2409
 yatyo = yatyo %>% dplyr::rename(ymd = 調査年月日, meigara = 銘柄, n_hako = 箱数) %>% tidyr::gather(key = no, value = zentyo, 4:31) %>% mutate(year = as.numeric(str_sub(ymd, 1, 4)), month = as.numeric(str_sub(ymd, 6, 7)), gyokaku_kg = n_hako*7, gyokaku_n = meigara*n_hako) %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12")) %>% na.omit()
 sokutei_n = yatyo %>% group_by(ymd, meigara) %>% dplyr::summarize(sokutei_n = n())
 yatyo = left_join(yatyo, sokutei_n, by = c("ymd", "meigara")) %>% mutate(yatyo, rate = gyokaku_n/sokutei_n)
+
+tag_rate = yatyo %>% select(year, month, meigara, rate) %>% mutate(tag =　paste(year, month, meigara, sep = '_'))
+tag_rate = tag_rate %>% distinct(tag, .keep_all = T)
 
 rand = runif(nrow(yatyo)*100) %>% matrix(ncol = 100)
 loop = matrix(NA, ncol = 101, nrow = nrow(yatyo))
@@ -142,10 +146,13 @@ loop[, 1] = yatyo$zentyo
 for(i in 1:100){
   loop[, i+1] = (0.8131*(loop[, 1]+rand[, i])+0.16238)%/%1
 }
-loop = loop[, -1] %>% as.data.frame() %>% mutate(year = yatyo$year, season = yatyo$season, month = yatyo$month, rate = yatyo$rate) %>% gather(key = times, value = taityo, 1:100)
-loop2 = loop %>% group_by(year, season, month, times, taityo, rate) %>% dplyr::summarize(count = n())
-m_sosei = loop2 %>% group_by(year, season, taityo, rate) %>% dplyr::summarize(mean = mean(count))
+ncol(loop)
+nrow(loop)
+loop = loop[, -1] %>% as.data.frame() %>% mutate(year = yatyo$year, season = yatyo$season, month = yatyo$month, meigara = yatyo$meigara) %>% gather(key = times, value = taityo, 1:100) %>% mutate(tag = paste(year, month, meigara, sep = '_'))
+loop2 = loop %>% group_by(year, season, month, times, taityo, tag) %>% dplyr::summarize(count = n())
+m_sosei = loop2 %>% group_by(year, season, taityo, tag) %>% dplyr::summarize(mean = mean(count))
 summary(m_sosei)
+m_sosei2 = left_join(m_sosei, tag_rate, by = 'tag')
 total_sosei = m_sosei %>% mutate(rate = rate) %>% mutate(total_n = mean*rate)
 
 # figures
