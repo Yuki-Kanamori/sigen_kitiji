@@ -45,7 +45,7 @@ require(stringr)
 
 # please change here -----------------------------------------------------------
 # set working directory
-setwd("/Users/yk/Dropbox/業務/キチジ太平洋北部/森川さん由来/R01d_キチジ資源評価")
+setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/森川さん由来/R01d_キチジ資源評価")
 
 # how many years ago
 # e.g. wanna analyze the data of 2018 and now is 2020, then n = 2
@@ -133,6 +133,8 @@ head(yatyo)
 summary(yatyo)
 # 28*171 = 4788
 yatyo = yatyo %>% dplyr::rename(ymd = 調査年月日, meigara = 銘柄, n_hako = 箱数) %>% tidyr::gather(key = no, value = zentyo, 4:31) %>% mutate(year = as.numeric(str_sub(ymd, 1, 4)), month = as.numeric(str_sub(ymd, 6, 7)), gyokaku_kg = n_hako*7, gyokaku_n = meigara*n_hako) %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12")) %>% na.omit()
+sokutei_n = yatyo %>% group_by(ymd, meigara) %>% dplyr::summarize(sokutei_n = n())
+yatyo = left_join(yatyo, sokutei_n, by = c("ymd", "meigara")) %>% mutate(yatyo, rate = gyokaku_n/sokutei_n)
 
 rand = runif(nrow(yatyo)*100) %>% matrix(ncol = 100)
 loop = matrix(NA, ncol = 101, nrow = nrow(yatyo))
@@ -140,14 +142,10 @@ loop[, 1] = yatyo$zentyo
 for(i in 1:100){
   loop[, i+1] = (0.8131*(loop[, 1]+rand[, i])+0.16238)%/%1
 }
-loop = loop[, -1] %>% as.data.frame() %>% mutate(year = yatyo$year, season = yatyo$season, month = yatyo$month) %>% gather(key = times, value = taityo, 1:100)
-loop2 = loop %>% group_by(year, season, month, times, taityo) %>% dplyr::summarize(count = n())
-m_sosei = loop2 %>% group_by(year, season, taityo) %>% dplyr::summarize(mean = mean(count))
-
-sokutei_n = nrow(yatyo)
-total_gyokaku_n = sum(yatyo$gyokaku_n)
-rate = total_gyokaku_n/sokutei_n
-
+loop = loop[, -1] %>% as.data.frame() %>% mutate(year = yatyo$year, season = yatyo$season, month = yatyo$month, rate = yatyo$rate) %>% gather(key = times, value = taityo, 1:100)
+loop2 = loop %>% group_by(year, season, month, times, taityo, rate) %>% dplyr::summarize(count = n())
+m_sosei = loop2 %>% group_by(year, season, taityo, rate) %>% dplyr::summarize(mean = mean(count))
+summary(m_sosei)
 total_sosei = m_sosei %>% mutate(rate = rate) %>% mutate(total_n = mean*rate)
 
 # figures
