@@ -221,6 +221,12 @@ labs = labs(x = "Length", y = "Weight", title = "Length composition in 2018")
 g+b+f+labs+theme_bw()
 
 
+
+# (3) 八戸 ------------------------------------------------------------------
+tai_hati = read.xlsx("04_キチジ八戸漁連2004-2018.xlsx", "みなと2018")
+head(tai_hati)
+tai_hati %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12")) %>% 
+
 # 3-6 補足図3-1 --------------------------------------------------------------
 
 
