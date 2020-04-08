@@ -111,21 +111,33 @@ g_miya2 = ddply(g_miya, .(size, year, month, season), summarize, total = sum(miz
 tai_miya = read.xlsx("02_キチジ宮城体長組成明細2018.xlsx", 1)
 tai_miya = tai_miya[, 1:26] 
 summary(tai_miya)
+tai_miya = tai_miya %>% filter(銘柄コード == 91) # 別の種や体長組成の算出に不必要なデータが入っている場合があるため，ここで念のためフィルターをかける
 tai_miya = tai_miya %>% dplyr::rename(ymd = 漁獲年月日, start = 開始の階級値, do = 度数) %>% select(ymd, start, do) %>% mutate(year = as.numeric(str_sub(ymd, 1, 4)), month = as.numeric(str_sub(ymd,5, 6)), day = as.numeric(str_sub(ymd, 7, 8))) %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"))
 
-rand = runif(nrow(tai_miya)*10) %>% matrix(ncol = 10)
+set.seed(1)
+rand = runif(nrow(tai_miya)*100) %>% matrix(ncol = 100)
 
-loop = matrix(NA, ncol = 11, nrow = nrow(tai_miya))
+loop = matrix(NA, ncol = 101, nrow = nrow(tai_miya))
 loop[, 1] = tai_miya$start
-for(i in 1:10){
+for(i in 1:100){
   loop[, i+1] = (0.8131*(loop[, 1]+rand[, i])+0.16238)%/%1
 }
-loop = loop[, -1] %>% as.data.frame() %>% mutate(year = tai_miya$year, season = tai_miya$season, month = tai_miya$month, do = tai_miya$do) %>% gather(key = times, value = taityo, 1:10)
-tai_miya2 = loop %>% group_by(year, season, month, taityo) %>% dplyr::summarize(number = round(mean(do)))
+loop = loop[, -1] %>% as.data.frame() %>% mutate(year = tai_miya$year, season = tai_miya$season, month = tai_miya$month, do = tai_miya$do) %>% tidyr::gather(key = times, value = taityo, 1:100)
+loop2 = loop %>% group_by(year, season, times, taityo) %>% dplyr::summarize(count = n())
+summary(loop2)
+tai_miya2 = loop2 %>% group_by(year, season, taityo) %>% dplyr::summarize(mean = mean(count))
 
-weight = data_frame(taityo = rep(5:19), weight = c(3.0,5.2,8.4,12.7,18.3,25.5,34.4,45.3,58.5,74.0,92.3,113.5,137.8,165.6,197.1))
-tai_miya2 = left_join(tai_miya2, weight, by = "taityo") %>% mutate(total_weight = number*weight)
+weight = data.frame(taityo = rep(5:19)) %>% mutate(weight = 0.00000531472*((taityo+0.5)*10)^3.30527)
+tai_miya2 = left_join(tai_miya2, weight, by = "taityo") %>% mutate(total_weight = (mean*weight)/1000)
 summary(tai_miya2)
+
+# figures
+g = ggplot(tai_miya2, aes(x = taityo, y = mean), stat = "identity")
+b = geom_bar(stat = "identity")
+f = facet_wrap(~ season, ncol = 1, scales = 'free')
+labs = labs(x = "Length", y = "Numbers", title = "Kokichiji")
+g+b+f+labs+theme_bw()
+
 
 # (1-D) きちじの体長組成---------------------------------------------------------
 yatyo = read.csv("宮城_野帳.csv", fileEncoding = "CP932")
@@ -144,6 +156,7 @@ yatyo = left_join(yatyo, sokutei_n, by = c("ymd", "meigara")) %>% mutate(yatyo, 
 
 tag_rate = yatyo %>% select(tag, rate) %>% distinct(.keep_all = T)
 
+set.seed(1)
 rand = runif(nrow(yatyo)*100) %>% matrix(ncol = 100)
 loop = matrix(NA, ncol = 101, nrow = nrow(yatyo))
 loop[, 1] = yatyo$zentyo
