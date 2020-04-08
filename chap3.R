@@ -97,7 +97,7 @@ fig = local_map+theme_bw()+th+p+c+labs(title = "", x = "Longitude", y = "Latitud
 setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/森川さん由来/R01d_キチジ資源評価/R01d_キチジVPA")
 
 
-# (1-B) ---------------------------------------------------------
+# (1-B) きちじとこきちじの漁獲量---------------------------------------------------------
 g_miya = read.csv("漁獲量_宮城.csv", fileEncoding = "CP932")
 summary(g_miya)
 g_miya = g_miya %>% mutate(ymd = as.Date(g_miya$年月日, format = "%Y/%m/%d")) %>% 
@@ -107,7 +107,7 @@ g_miya = g_miya %>% mutate(ymd = as.Date(g_miya$年月日, format = "%Y/%m/%d"))
 g_miya2 = ddply(g_miya, .(size, year, month, season), summarize, total = sum(mizuage))
 
 
-# (1-C) ---------------------------------------------------------
+# (1-C) こきちじの体長組成---------------------------------------------------------
 tai_miya = read.xlsx("02_キチジ宮城体長組成明細2018.xlsx", 1)
 tai_miya = tai_miya[, 1:26] 
 summary(tai_miya)
@@ -127,7 +127,7 @@ weight = data_frame(taityo = rep(5:19), weight = c(3.0,5.2,8.4,12.7,18.3,25.5,34
 tai_miya2 = left_join(tai_miya2, weight, by = "taityo") %>% mutate(total_weight = number*weight)
 summary(tai_miya2)
 
-# (1-D) ---------------------------------------------------------
+# (1-D) きちじの体長組成---------------------------------------------------------
 yatyo = read.csv("宮城_野帳.csv", fileEncoding = "CP932")
 head(yatyo)
 summary(yatyo)
