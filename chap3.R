@@ -128,8 +128,8 @@ loop2 = loop %>% group_by(year, season, times, taityo) %>% dplyr::summarize(coun
 summary(loop2)
 tai_miya2 = loop2 %>% group_by(year, season, taityo) %>% dplyr::summarize(mean = mean(count))
 
-weight = data.frame(taityo = rep(5:19)) %>% mutate(weight_W = 0.00000531472*((taityo+0.5)*10)^3.30527)
-tai_miya2 = left_join(tai_miya2, weight, by = "taityo") %>% mutate(total_weight_Y = (mean*weight)/1000)
+weight = data.frame(taityo = rep(5:19)) %>% mutate(weight = 0.00000531472*((taityo+0.5)*10)^3.30527)
+tai_miya2 = left_join(tai_miya2, weight, by = "taityo") %>% mutate(total_weight_kg = (mean*weight)/1000)
 summary(tai_miya2)
 
 # figures
@@ -166,9 +166,9 @@ for(i in 1:100){
 }
 ncol(loop)
 nrow(loop)
-loop = loop[, -1] %>% as.data.frame() %>% mutate(tag = yatyo$tag) %>% gather(key = times, value = taityo, 1:100)
-loop2 = loop %>% group_by(tag, times, taityo) %>% dplyr::summarize(count = n())
-m_sosei = loop2 %>% group_by(taityo, tag) %>% dplyr::summarize(mean = mean(count))
+loop = loop[, -1] %>% as.data.frame() %>% mutate(year = yatyo$year, tag = yatyo$tag) %>% gather(key = times, value = taityo, 1:100)
+loop2 = loop %>% group_by(year, tag, times, taityo) %>% dplyr::summarize(count = n())
+m_sosei = loop2 %>% group_by(year, taityo, tag) %>% dplyr::summarize(mean = mean(count))
 summary(m_sosei)
 m_sosei2 = left_join(m_sosei, tag_rate, by = 'tag')
 total_sosei = m_sosei2 %>% mutate(total_n = mean*rate, month = as.numeric(str_sub(tag, 6, 7))) %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"))
@@ -182,14 +182,28 @@ g+b+f+labs+theme_bw()
 
 
 # (1-E) ---------------------------------------------------------
-kiti = total_sosei %>% mutate(weight = 0.00000531472*((taityo+0.5)*10)^3.30527) %>% mutate(total_weight_kg = (total_n*weight)/1000)
+kiti = total_sosei %>% mutate(weight = 0.00000531472*((taityo+0.5)*10)^3.30527) %>% mutate(total_weight_kg = (total_n*weight)/1000, species = 'kiti') %>% select(year, season, taityo, total_n, weight, total_weight_kg, species) %>% dplyr::rename(mean = total_n)
+head(kiti)
+kokiti = tai_miya2 %>% mutate(species = 'kokiti')
+head(kokiti)
+miyagi = rbind(kiti, kokiti)
+summary(miyagi)
 
-sum_kiti = kiti %>% group_by(season) %>% dplyr::summarize(sum = sum(total_weight_kg))
-total_g_miyagi = g_miya2 %>% group_by(size, season) %>% dplyr::summarize(sum = sum(total))
-rate = left_join(sum_kiti, total_g_miyagi %>% filter(size == "きちじ"), by = "season") %>% mutate(rate = sum.y/sum.x)
+sum_miya = miyagi %>% group_by(year, season, species) %>% dplyr::summarize(sum = sum(total_weight_kg))
+total_g_miyagi = g_miya2 %>% mutate(species = ifelse(g_miya2$size == "きちじ", 'kiti', 'kokiti')) %>% group_by(year, season, species) %>% dplyr::summarize(sum = sum(total))
+head(sum_miya)
+head(total_g_miyagi)
+rate = left_join(sum_miya, total_g_miyagi, by = c('year', 'season', 'species')) %>% mutate(rate = sum.y/sum.x)
 
-kiti = left_join(kiti, rate %>% select(season, rate), by = "season")
-kiti = kiti %>% mutate(weight2 = total_n*rate.y)
+miyagi = left_join(miyagi, rate, by = c('year', 'season', 'species')) 
+miyagi = miyagi %>% mutate(weight2 = mean*rate)
+
+# figures
+g = ggplot(miyagi, aes(x = taityo, y = weight2), stat = "identity")
+b = geom_bar(stat = "identity")
+# f = facet_wrap(~ season, ncol = 1, scales = 'free')
+labs = labs(x = "Length", y = "Weight", title = "Miyagi 2018")
+g+b+labs+theme_bw()
 
 
 # 3-6 補足図3-1 --------------------------------------------------------------
