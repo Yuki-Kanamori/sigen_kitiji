@@ -162,7 +162,7 @@ total_sosei = m_sosei2 %>% mutate(total_n = mean*rate, month = as.numeric(str_su
 # figures
 g = ggplot(total_sosei, aes(x = taityo, y = total_n), stat = "identity")
 b = geom_bar(stat = "identity")
-f = facet_wrap(~ season, ncol = 1)
+f = facet_wrap(~ season, ncol = 1, scales = 'free')
 labs = labs(x = "Length", y = "Numbers", title = "Kichiji")
 g+b+f+labs+theme_bw()
 
