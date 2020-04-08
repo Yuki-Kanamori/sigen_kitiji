@@ -196,14 +196,29 @@ head(total_g_miyagi)
 rate = left_join(sum_miya, total_g_miyagi, by = c('year', 'season', 'species')) %>% mutate(rate = sum.y/sum.x)
 
 miyagi = left_join(miyagi, rate, by = c('year', 'season', 'species')) 
-miyagi = miyagi %>% mutate(weight2 = mean*rate)
+miyagi = miyagi %>% mutate(weight2 = mean*rate) %>% mutate(pref = 'Miyagi')
+
+total = miyagi %>% group_by(year, season) %>% dplyr::summarize(total = sum(weight2)) %>% mutate(pref = "miyagi") %>% as.data.frame()
+head(total)
+fukuiba_mae = 49117　#ここ変更の余地あり
+fukuiba_usiro = 1212 #ここ変更の余地あり
+rate_fukuiba_mae = (total %>% filter(season == '1-6') %>% select(total) + fukuiba_mae)/total %>% filter(season == '1-6') %>% select(total)
+rate_fukuiba_usiro = (total %>% filter(season == '7-12') %>% select(total) + fukuiba_usiro)/total %>% filter(season == '7-12') %>% select(total)
+
+head(miyagi)
+fukuiba = miyagi %>% group_by(year, season, taityo) %>% dplyr::summarize(sum = sum(weight2))
+fukuiba = fukuiba %>% mutate(rate = ifelse(fukuiba$season == '1-6', as.numeric(rate_fukuiba_mae), as.numeric(rate_fukuiba_usiro))) %>% mutate(weight2 = sum*rate, pref = 'South of Miyagi')
+head(fukuiba)
+head(miyagi)
+
+fig = rbind(miyagi %>% select(year, season, taityo, weight2, pref), fukuiba %>% select(year, season, taityo, weight2, pref))
 
 # figures
-g = ggplot(miyagi, aes(x = taityo, y = weight2), stat = "identity")
+g = ggplot(fig, aes(x = taityo, y = weight2), stat = "identity")
 b = geom_bar(stat = "identity")
-# f = facet_wrap(~ season, ncol = 1, scales = 'free')
-labs = labs(x = "Length", y = "Weight", title = "Miyagi 2018")
-g+b+labs+theme_bw()
+f = facet_wrap(~ pref, ncol = 1, scales = 'free')
+labs = labs(x = "Length", y = "Weight", title = "Length composition in 2018")
+g+b+f+labs+theme_bw()
 
 
 # 3-6 補足図3-1 --------------------------------------------------------------
