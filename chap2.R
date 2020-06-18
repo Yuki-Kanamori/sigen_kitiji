@@ -130,7 +130,7 @@ write.csv(age_composition, "age_composition.csv", fileEncoding = "CP932")
 
 
 
-# step 5 年齢別資源微数の算出 ---------------------------------------------
+# step 5 年齢別資源尾数の算出 ---------------------------------------------
 len_num = read.csv("length_number.csv")
 head(len_num)
 colnames(len_num) = c("length_cate", "number")
