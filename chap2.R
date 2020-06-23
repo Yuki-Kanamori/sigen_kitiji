@@ -43,7 +43,7 @@ setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/森川さん由来
 n = 2
 
 
-# 2=1 estimate the number at age ------------------------------------------
+# 2-1 estimate the number at age ------------------------------------------
 # 2-1.1 make the age-length key -------------------------------------------
 
 # load the data
