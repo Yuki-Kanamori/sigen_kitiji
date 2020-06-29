@@ -24,8 +24,8 @@
 
 
 # load the packages -------------------------------------------------------
-require(xlsx)
-require(openxlsx)
+# require(xlsx)
+# require(openxlsx)
 require(tidyr)
 require(dplyr)
 require(plyr)
@@ -35,34 +35,35 @@ require(stringr)
 
 # please change here -----------------------------------------------------------
 # set working directory
-setwd("/Users/yk/Dropbox/業務/キチジ太平洋北部/森川さん由来/R01d_キチジ資源評価")
-setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/森川さん由来/R01d_キチジ資源評価")
+setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/SA2020")
 
 # how many years ago
 # e.g. wanna analyze the data of 2018 and now is 2020, then n = 2
-n = 2
+# n = 2
 
 
 # 2-1 estimate the number at age ------------------------------------------
 # 2-1.1 make the age-length key -------------------------------------------
 
 # load the data
-year = as.numeric(str_sub(Sys.Date(), 1, 4))-n
-filename = paste0("1_", year, "年キチジ年齢分解.xlsx")
-df = read.xlsx(filename, 1)
-df = df[, c(1,3)]
-colnames(df) = c("length_cm", "age")
+# year = as.numeric(str_sub(Sys.Date(), 1, 4))-n
+# filename = paste0("1_", year, "年キチジ年齢分解.xlsx")
+# df = read.xlsx(filename, 1)
+# df = df[, c(1,3)]
+# colnames(df) = c("length_cm", "age")
+# summary(df)
+df = read.csv("ALdata.csv") %>% filter(pick == "TRUE") %>% select(label, SL, age)
 summary(df)
-
+mode(df$age)
 # make dataframe with length at age and number at age (not necessary for stock assessment)
 
 
 
 # 2-1.1.1 remove the data that age is 10+, 10++, and ? --------------------
-df = df %>% mutate(length_mm = length_cm*10, age_num = as.numeric(age)) #10+, 10++, and ? turned NA
+df = df %>% mutate(length_mm = SL, age_num = as.numeric(as.character(age))) #10+, 10++, and ? turned NA
 summary(df)
 df2 = na.omit(df)
-
+summary(df2)
 
 # 2-1.1.2 fit the von Bertalanffy growth curve and estimate params --------
 # Lt = L_max*(1-e^(-K(t-t0)))
