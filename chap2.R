@@ -82,10 +82,16 @@ plotFit(fit, interval = "prediction", ylim = c(0, 250), pch = 19, col.pred = 'li
 # use 10+ and 10++
 head(df)
 df3 = df %>% select(length_mm, age)
-df3 = df3 %>% mutate(fumei = ifelse(df3$age == "?", 100, df3$age),
-                     age2 = ifelse(df3$age == "10+", 10, ifelse(df3$age == "10++", 10, df3$age))) %>% filter(fumei != 100) %>% select(-fumei) %>% mutate(count = 1)
+summary(df3)
+head(df3)
+df3 = df3 %>% mutate(fumei = ifelse(df3$age == "?", 100, as.character(df3$age)))
+
+
+df3 = df3 %>% mutate(fumei = ifelse(df3$age == "?", 100, as.character(df3$age)),
+                     age2 = ifelse(df3$age == "10+", 10, ifelse(df3$age == "10++", 10, as.character(df3$age)))) %>% filter(fumei != 100) %>% select(-fumei) %>% mutate(count = 1)
 df3$age2 = as.numeric(df3$age2)
 df3$age3 = ifelse(df3$age2 > 10, 10, df3$age2)
+df3 = na.omit(df3)
 summary(df3)
 naa = ddply(df3, .(length_mm, age3), summarize, number = sum(count))
 
