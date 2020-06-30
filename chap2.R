@@ -24,8 +24,8 @@
 
 
 # load the packages -------------------------------------------------------
-# require(xlsx)
-# require(openxlsx)
+require(xlsx)
+require(openxlsx)
 require(tidyr)
 require(dplyr)
 require(plyr)
@@ -134,6 +134,12 @@ age_composition = AC %>% tidyr::spread(key = length_cate, value = freq)
 a_sum2 = a_sum %>% tidyr::spread(key = length_cate, value = sum) %>% mutate(age = "total")
 age_composition = rbind(age_composition, a_sum2)
 write.csv(age_composition, "age_composition.csv", fileEncoding = "CP932")
+
+
+# step4 estimate the number at age from survey data -------------
+setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/SA2020")
+NatL = read.csv("survey_N_at_length.csv")
+
 
 
 
