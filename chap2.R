@@ -137,19 +137,6 @@ write.csv(age_composition, "age_composition.csv", fileEncoding = "CP932")
 
 
 # step 5 年齢別資源尾数の算出 ---------------------------------------------
-setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/森川さん由来/R01d_キチジ資源評価")
-len_num = read.csv("length_number.csv")
-head(len_num)
-colnames(len_num) = c("length_cate", "number")
-summary(len_num)
-AC2 = left_join(AC, len_num, by = "length_cate") %>% mutate(bisu = freq*number)
-num_ac2 = ddply(AC2, .(length_cate), summarize, total = sum(number)) #多分計算間違い．あとカテ4に値はいらん
-
-number_at_age2 = AC2 %>% select(length_cate, age, bisu) %>% tidyr::spread(key = length_cate, value = bisu)
-num_ac2 = num_ac2 %>% tidyr::spread(key = length_cate, value = total) %>% mutate(age = "total")
-
-number_at_age2 = rbind(number_at_age2, num_ac2)
-
 # get survey data and make dataframe
 setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/SA2020")
 len_num = read.csv("survey_N_at_length.csv", fileEncoding = "CP932")
@@ -172,3 +159,22 @@ number_at_age2 = rbind(number_at_age2, num_ac2)
 
 number_at_age2[2,5] = number_at_age2[nrow(number_at_age2), 5]
 write.csv(number_at_age2, "number_at_age.csv")
+
+
+
+# 2-2 -----------------------------------------------------------
+number_at_age3 = number_at_age2[-nrow(number_at_age2), ] %>% gather(key = age, value = number, 2:ncol(number_at_age2))
+summary(number_at_age3)
+mode(number_at_age3$age)
+length = number_at_age3 %>% mutate(sum_length = (as.numeric(as.character(as.factor(age))) + 0.5)*number)
+
+s_length_age = ddply(length, .(age), summarize, sum_l = sum(sum_length))
+s_number_age = ddply(length, .(age), summarize, sum_n = sum(number))
+
+mlength_at_age = left_join(s_length_age, s_number_age, by = "age") %>% mutate(mean = sum_l/sum_n) %>% select(age, mean)
+
+tidyr::spread(key = length_cate, value = bisu)
+
+mode(length$age)
+mlength_at_age = length %>% dplyr::group_by(age) %>% dplyr::summarize(mean_length = mean(length$sum_length))
+mlength_at_age = ddply(length, .(age), summarize, mean_length = mean(length$length))
