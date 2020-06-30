@@ -125,7 +125,7 @@ sum2 = sum %>% tidyr::spread(key = length_cate, value = sum) %>% mutate(age = "t
 number_at_age = rbind(NAA2, sum2)
 write.csv(number_at_age, "number_at_age.csv", fileEncoding = "CP932")
 
-# 2-1.3.2 make the tables of age composition
+# 2-1.3.2 make the tables of age composition (AC)
 AC = left_join(NAA, sum, by = "length_cate") %>% mutate(freq = ifelse(sum > 0, number/sum, 0))
 AC = AC %>% select(length_cate, age, freq)
 a_sum = ddply(AC, .(length_cate), summarize, sum = sum(freq))
@@ -136,14 +136,8 @@ age_composition = rbind(age_composition, a_sum2)
 write.csv(age_composition, "age_composition.csv", fileEncoding = "CP932")
 
 
-# step4 estimate the number at age from survey data -------------
-setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/SA2020")
-NatL = read.csv("survey_N_at_length.csv")
-
-
-
-
 # step 5 年齢別資源尾数の算出 ---------------------------------------------
+setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/森川さん由来/R01d_キチジ資源評価")
 len_num = read.csv("length_number.csv")
 head(len_num)
 colnames(len_num) = c("length_cate", "number")
@@ -156,6 +150,23 @@ num_ac2 = num_ac2 %>% tidyr::spread(key = length_cate, value = total) %>% mutate
 
 number_at_age2 = rbind(number_at_age2, num_ac2)
 
+# get survey data and make dataframe
+setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/SA2020")
+len_num = read.csv("survey_N_at_length.csv", fileEncoding = "CP932")
+len_num = len_num[, 16:ncol(len_num)] %>% mutate(site = c("N", "S"))
+len_num = len_num %>% gather(key = age_j, value = number, 1:(ncol(len_num)-1)) %>% na.omit()
+summary(len_num)
+# len_num2 = ddply(NatL, .(age_j), summarize, number = sum(number))
+len_num2 = len_num %>% dplyr::group_by(age_j) %>% dplyr::summarize(number = sum(number)) %>% mutate(length_cate = as.numeric(str_sub(age_j, 3, 4))) %>% select(-age_j)
 
+summary(len_num2)
+AC2 = left_join(AC, len_num2, by = "length_cate") %>% mutate(bisu = freq*number)
+num_ac2 = ddply(AC2, .(length_cate), summarize, total = mean(number))
 
+number_at_age2 = AC2 %>% select(length_cate, age, bisu) %>% tidyr::spread(key = length_cate, value = bisu)
+num_ac2 = num_ac2 %>% tidyr::spread(key = length_cate, value = total) %>% mutate(age = "total")
+
+number_at_age2 = rbind(number_at_age2, num_ac2)
+# x = number_at_age2[1:(nrow(number_at_age2)-1), 2:ncol(number_at_age2)]
+# apply(x, 2, sum) - number_at_age2[nrow(number_at_age2), 2:ncol(number_at_age2)]
 
