@@ -123,7 +123,7 @@ sum = ddply(NAA, .(length_cate), summarize, sum = sum(number))
 NAA2 = NAA %>% tidyr::spread(key = length_cate, value = number)
 sum2 = sum %>% tidyr::spread(key = length_cate, value = sum) %>% mutate(age = "total")
 number_at_age = rbind(NAA2, sum2)
-write.csv(number_at_age, "number_at_age.csv", fileEncoding = "CP932")
+write.csv(number_at_age, "number_at_age_freq.csv", fileEncoding = "CP932")
 
 # 2-1.3.2 make the tables of age composition (AC)
 AC = left_join(NAA, sum, by = "length_cate") %>% mutate(freq = ifelse(sum > 0, number/sum, 0))
@@ -170,3 +170,5 @@ number_at_age2 = rbind(number_at_age2, num_ac2)
 # x = number_at_age2[1:(nrow(number_at_age2)-1), 2:ncol(number_at_age2)]
 # apply(x, 2, sum) - number_at_age2[nrow(number_at_age2), 2:ncol(number_at_age2)]
 
+number_at_age2[2,5] = number_at_age2[nrow(number_at_age2), 5]
+write.csv(number_at_age2, "number_at_age.csv")
