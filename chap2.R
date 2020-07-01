@@ -242,18 +242,6 @@ iba = iba %>% dplyr::rename(method = 漁法) %>% mutate(num = as.numeric(as.char
 iba = iba %>% filter(method != "小計") %>% dplyr::group_by(method) %>% dplyr::summarize(sum = sum(num))
 iba_sum = iba
 
-require(abind)
-tag = abind(ao_sum$method, iwa_sum$method, miya_sum$method, fuku_sum$method, iba_sum$method, along = 1) %>% data.frame() %>% distinct()
-
-
-
-merge = ao_sum %>% dplyr::left_join(iwa_sum, by = "method")
-merge = iwa_sum %>% dplyr::left_join(miya_sum, by = "method")
-
-
-merge = dplyr::left_join(ao_sum, iwa_sum, by = "method")
-merge = dplyr::left_join(ao_sum, iwa_sum, by = "method")
-
-merge = left_join(merge, miya_sum, by = "method")
-merge = left_join(merge, fuku_sum, by = "method")
-merge = left_join(merge, iba_sum, by = "method")
+merge = ao_sum %>% dplyr::full_join(iwa_sum, by = "method") %>% dplyr::full_join(miya_sum, by = "method") %>% dplyr::full_join(fuku_sum, by = "method") %>% dplyr::full_join(iba_sum, by = "method")
+colnames(merge) = c("漁業種", "青森", "岩手", "宮城", "福島", "茨城")
+merge[is.na(merge)] = 0
