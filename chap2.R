@@ -175,3 +175,85 @@ s_number_age = ddply(length, .(age), summarize, sum_n = sum(number))
 mean_length_weight_at_age = left_join(s_length_age, s_number_age, by = "age") %>% mutate(mean_cm = sum_l/sum_n) %>% select(age, mean_cm) %>% mutate(mean_mm = mean_cm*10) %>% mutate(weight = (1.86739*10^(-5))*(mean_mm^3.06825547)) 
 write.csv(mean_length_weight_at_age, "mean_length_weight_at_age.csv")
 
+
+
+# 2-3 -----------------------------------------------------------
+okisoko = read.csv("okisoko.csv")
+summary(okisoko$魚種名)
+colnames(okisoko)
+summary(okisoko)
+
+okisoko = okisoko %>% mutate(method = ifelse(漁法 == 102, "2そう曳き", ifelse(漁法 == 103, "トロール", "かけ廻し"))) %>%
+  mutate(pref = ifelse(県コード == 13, "青森", ifelse(県コード == 14, "岩手", ifelse(県コード == 15, "宮城", ifelse(県コード == 18, "茨城", "福島"))))) %>% select(漁区名, method, pref, 漁獲量の合計, 網数の合計) %>% dplyr::rename(area = 漁区名, catch = 漁獲量の合計, effort = 網数の合計) %>% mutate(cpue = catch/effort)
+
+catch_t1 = ddply(okisoko, .(pref, method, area), summarize, sum = sum(catch)) %>% tidyr::spread(key = area, value = sum)
+
+catch_t2 = ddply(okisoko, .(area), summarize, sum = sum(catch))
+
+catch_t3 = ddply(okisoko, .(method, area), summarize, sum = sum(catch)) %>% tidyr::spread(key = method, value = sum)
+
+effort_t1 = ddply(okisoko, .(method, area), summarize, sum = sum(effort)) %>% tidyr::spread(key = method, value = sum)
+
+write.csv(catch_t1, "catch_t1.csv")
+write.csv(catch_t2, "catch_t2.csv")
+write.csv(catch_t3, "catch_t3.csv")
+write.csv(effort_t1, "effort_t1.csv")
+
+
+### data from each prefecture
+# aomori
+ao = read.xlsx("catch_pref.xlsx", sheet = "ao") %>% select(年, 漁法名, 漁法, 月間数量) %>% dplyr::rename(year = 年, method_name = 漁法名, method = 漁法, catch_kg = 月間数量)
+summary(ao)
+unique(ao$method)
+unique(ao$method_name)
+ao_sum = ddply(ao, .(method), summarize, sum = sum(catch_kg))
+
+
+### iwate
+iwa = read.xlsx("catch_pref.xlsx", sheet = "iwa") %>% select(漁業種名, 合計) %>% dplyr::rename(method = 漁業種名, sum_temp = 合計) %>% dplyr::group_by(method) %>% dplyr::summarize(sum = sum(sum_temp))
+iwa_sum = iwa
+
+### miyagi
+miya = read.xlsx("catch_pref.xlsx", sheet = "miya", startRow = 4)
+miya = miya[, c(1,2,ncol(miya))]
+miya_l = miya %>% filter(魚種コード == "きちじ") %>% select(漁業種コード, 総計) %>% dplyr::rename(method = 漁業種コード, sum = 総計)
+miya_s = miya %>% filter(魚種コード == "こきちじ") %>% select(漁業種コード, 総計) %>% dplyr::rename(method = 漁業種コード, sum = 総計)
+
+miya2 = left_join(miya_l, miya_s, by = "method")
+miya2[is.na(miya2)] = 0
+miya2 = miya2 %>% mutate(sum = sum.x+sum.y) %>% select(method, sum)
+miya_sum = miya2
+
+### fukusima
+fuku = read.xlsx("catch_pref.xlsx", sheet = "fuku", startRow = 2) %>% 
+  select(沖合底びき網) %>% 
+  mutate(method = paste0("沖合底びき網")) %>% 
+  dplyr::rename(catch_kg = 沖合底びき網) %>% 
+  na.omit %>% 
+  dplyr::group_by(method) %>% 
+  dplyr::summarize(sum = sum(catch_kg))
+fuku_sum = fuku
+
+
+### ibaraki
+iba = read.xlsx("catch_pref.xlsx", sheet = "iba", startRow = 3)
+iba = iba[, c("漁法", "年計")] 
+iba = iba %>% dplyr::rename(method = 漁法) %>% mutate(num = as.numeric(as.character(as.factor(iba$年計))))
+iba = iba %>% filter(method != "小計") %>% dplyr::group_by(method) %>% dplyr::summarize(sum = sum(num))
+iba_sum = iba
+
+require(abind)
+tag = abind(ao_sum$method, iwa_sum$method, miya_sum$method, fuku_sum$method, iba_sum$method, along = 1) %>% data.frame() %>% distinct()
+
+
+
+merge = ao_sum %>% dplyr::left_join(iwa_sum, by = "method")
+merge = iwa_sum %>% dplyr::left_join(miya_sum, by = "method")
+
+
+merge = dplyr::left_join(ao_sum, iwa_sum, by = "method")
+merge = dplyr::left_join(ao_sum, iwa_sum, by = "method")
+
+merge = left_join(merge, miya_sum, by = "method")
+merge = left_join(merge, fuku_sum, by = "method")
+merge = left_join(merge, iba_sum, by = "method")
