@@ -267,3 +267,36 @@ merge = ao_sum %>% dplyr::full_join(iwa_sum, by = "method2") %>% dplyr::full_joi
 colnames(merge) = c("漁業種", "青森", "岩手", "宮城", "福島", "茨城")
 merge[is.na(merge)] = 0
 write.csv(merge, "merge.csv")
+
+
+
+# 2-4 -----------------------------------------------------------
+catch_old = read.csv("catchdata_old.csv", fileEncoding = "CP932") %>% na.omit()
+catch_old = catch_old[, c(1, 3:5)]
+catch_old = catch_old %>% tidyr::gather(key = method, value = sum, 2:4) %>% dplyr::rename(year = 年)
+catch_old = catch_old %>% mutate(method2 = ifelse(str_detect(catch_old$method, pattern = "以外"), "沖底・小底以外", catch_old$method)) %>% select(-method) %>% dplyr::rename(method = method2)
+summary(catch_old)
+
+catch_new = rbind(ao_sum, iwa_sum, miya_sum, fuku_sum, iba_sum) %>% mutate(年 = 2019)
+catch_new = catch_new %>% mutate(method = ifelse(str_detect(catch_new$method2, pattern = "沖底"), "沖底", ifelse(str_detect(catch_new$method2, pattern = "小底"), "小底", "沖底・小底以外"))) %>% select(-method2) %>% dplyr::rename(year = 年) %>% dplyr::rename(catch_kg = sum) %>% mutate(sum = catch_kg/1000)
+summary(catch_new)
+write.csv(catch_new, "catch2019.csv", fileEncoding = "CP932")
+
+colnames(catch_new)
+colnames(catch_old)
+catch = rbind(catch_old, catch_new %>% select(-catch_kg))
+summary(catch)
+catch = catch %>% dplyr::group_by(method, year) %>% dplyr::summarize(catch_t = sum(sum))
+
+unique(catch$method)
+levels(catch$method) 
+catch$method = factor(catch$method, levels = c("沖底・小底以外", "小底", "沖底"))
+
+require(ggplot2)
+g = ggplot(catch, aes(x = year, y = catch_t, fill = method))
+b = geom_bar(stat = "identity", width = 0.5, colour = "black")
+lab = labs(x = "年", y = "漁獲量 (トン)", fill = "漁業種")
+col_catch = c("grey50", "white", "grey0")
+c = scale_fill_manual(values = col_catch)
+fig5 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")
+ggsave(file = "fig5.png", plot = fig5, units = "in", width = 11.69, height = 8.27)
