@@ -187,17 +187,21 @@ okisoko = okisoko %>% mutate(method = ifelse(漁法 == 102, "2そう曳き", ife
   mutate(pref = ifelse(県コード == 13, "青森", ifelse(県コード == 14, "岩手", ifelse(県コード == 15, "宮城", ifelse(県コード == 18, "茨城", "福島"))))) %>% select(漁区名, method, pref, 漁獲量の合計, 網数の合計) %>% dplyr::rename(area = 漁区名, catch = 漁獲量の合計, effort = 網数の合計) %>% mutate(cpue = catch/effort)
 
 catch_t1 = ddply(okisoko, .(pref, method, area), summarize, sum = sum(catch)) %>% tidyr::spread(key = area, value = sum)
+catch_t1[is.na(catch_t1)] = 0
 
 catch_t2 = ddply(okisoko, .(area), summarize, sum = sum(catch))
+catch_t2[is.na(catch_t2)] = 0
 
 catch_t3 = ddply(okisoko, .(method, area), summarize, sum = sum(catch)) %>% tidyr::spread(key = method, value = sum)
+catch_t3[is.na(catch_t3)] = 0
 
 effort_t1 = ddply(okisoko, .(method, area), summarize, sum = sum(effort)) %>% tidyr::spread(key = method, value = sum)
+effort_t1[is.na(effort_t1)] = 0
 
-write.csv(catch_t1, "catch_t1.csv")
-write.csv(catch_t2, "catch_t2.csv")
-write.csv(catch_t3, "catch_t3.csv")
-write.csv(effort_t1, "effort_t1.csv")
+write.csv(catch_t1, "catch_t1.csv", fileEncoding = "CP932")
+write.csv(catch_t2, "catch_t2.csv", fileEncoding = "CP932")
+write.csv(catch_t3, "catch_t3.csv", fileEncoding = "CP932")
+write.csv(effort_t1, "effort_t1.csv", fileEncoding = "CP932")
 
 
 ### data from each prefecture
@@ -271,6 +275,8 @@ write.csv(merge, "merge.csv")
 
 
 # 2-4 -----------------------------------------------------------
+
+# catch trend ---------------------------------------------------
 catch_old = read.csv("catchdata_old.csv", fileEncoding = "CP932") %>% na.omit()
 catch_old = catch_old[, c(1, 3:5)]
 catch_old = catch_old %>% tidyr::gather(key = method, value = sum, 2:4) %>% dplyr::rename(year = 年)
@@ -300,3 +306,30 @@ col_catch = c("grey50", "white", "grey0")
 c = scale_fill_manual(values = col_catch)
 fig5 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")
 ggsave(file = "fig5.png", plot = fig5, units = "in", width = 11.69, height = 8.27)
+
+
+
+# effort trend --------------------------------------------------
+eff_old = read.csv("effortdata_old.csv", fileEncoding = "CP932")
+eff_old = ddply(eff_old, .(method, year), summarize, sum = sum(effort))
+
+eff = ddply(okisoko, .(method), summarize, sum = sum(effort))
+eff$year = 2019
+
+eff = rbind(eff_old, eff)
+eff = eff %>% mutate(label = ifelse(eff$method == "かけ廻し", "尻屋崎〜岩手沖のかけ廻し", ifelse(eff$method == "トロール", "金華山~房総のトロール", "岩手沖の2そう曳き")))
+
+unique(eff$label)
+levels(eff$label)
+eff$label = factor(eff$label, levels = c("尻屋崎〜岩手沖のかけ廻し", "岩手沖の2そう曳き", "金華山~房総のトロール"))
+
+g = ggplot(eff, aes(x = year, y = sum/1000, shape = label))
+p = geom_point()
+l = geom_line()
+lab = labs(x = "年", y = "有漁網数 (千)", shape = "漁業種")
+# col_catch = c("grey50", "white", "grey0")
+# c = scale_fill_manual(values = col_catch)
+fig6 = g+p+l+lab+theme_bw(base_family = "HiraKakuPro-W3")
+ggsave(file = "fig6.png", plot = fig6, units = "in", width = 11.69, height = 8.27)
+
+
