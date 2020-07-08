@@ -333,3 +333,20 @@ fig6 = g+p+l+lab+theme_bw(base_family = "HiraKakuPro-W3")
 ggsave(file = "fig6.png", plot = fig6, units = "in", width = 11.69, height = 8.27)
 
 
+
+# weighted cpue ----------------------------------------------------------
+gyo_old = read.csv("gyoseki_old.csv", fileEncoding = "CP932")
+
+
+
+okisoko = read.csv("okisoko.csv")
+summary(okisoko$魚種名)
+colnames(okisoko)
+summary(okisoko)
+
+w_cpue = okisoko %>% mutate(method = ifelse(漁法 == 102, "2そう曳き", ifelse(漁法 == 103, "トロール", "かけ廻し"))) %>%
+  mutate(pref = ifelse(県コード == 13, "青森", ifelse(県コード == 14, "岩手", ifelse(県コード == 15, "宮城", ifelse(県コード == 18, "茨城", "福島"))))) %>% select(漁区名, method, pref, 漁獲量の合計, 網数の合計) %>% dplyr::rename(area = 漁区名, catch = 漁獲量の合計, effort = 網数の合計) %>% group_by(method, year) %>% summarize()
+
+okisoko = okisoko %>% mutate(method = ifelse(漁法 == 102, "2そう曳き", ifelse(漁法 == 103, "トロール", "かけ廻し"))) %>%
+  mutate(pref = ifelse(県コード == 13, "青森", ifelse(県コード == 14, "岩手", ifelse(県コード == 15, "宮城", ifelse(県コード == 18, "茨城", "福島"))))) %>% select(漁区名, method, pref, 漁獲量の合計, 網数の合計) %>% dplyr::rename(area = 漁区名, catch = 漁獲量の合計, effort = 網数の合計) %>% mutate(cpue = catch/effort)
+w_cpue = 
