@@ -480,9 +480,18 @@ for(i in 1:nrow(naa)){
 
 ### number in January
 M = 2.5/20
+catch_this_yr = sum(okisoko$漁獲量の合計)/1000 # metric tons
+biomass_jan_this_yr = 9897*exp(-2/12*0.125)-460/6*exp(-2/12*0.125)
+fishing_rate = catch_this_yr/biomass_jan_this_yr
+terminal_F = -log(1-(fishing_rate/exp(-M/2)))
+Z = terminal_F + M
+surv_2month = exp(-Z/6)
 
-exp(log(1-(sum(okisoko$漁獲量の合計)/(9897*exp(-2/12*0.125)-460/6*exp(-2/12*0.125)))/exp(-M/2))/6)
-f = log(1-((sum(okisoko$漁獲量の合計)/(9897*exp(-2/12*0.125)-460*exp(-2/12*0.125)))/exp(-M/2)))
+naa$number_j = NA
+for(i in 1:nrow(naa)){
+  naa[i, "number_j"] = surv_2month*(naa$catch_pre[i]/naa$selectivity[i])
+}
+# naa$catch_pre/naa$selectivity
 
+naa$biomass_j = naa$number_j*naa$weight*(0.001)^2
 
-naa$biomass = naa$sur*(naa$sel03*0.3/naa$selectivity)*0.001*0.001
