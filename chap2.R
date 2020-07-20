@@ -433,3 +433,4 @@ require(gridExtra)
 fig8 = grid.arrange(kake, niso, tra, w, ncol = 1)
 ggsave(file = "fig8.png", plot = fig8, units = "in", width = 11.69, height = 8.27)
 
+
