@@ -444,7 +444,7 @@ colnames(naa) = c('catch', 'age')
 
 naa = naa %>% mutate(sel03 = naa$catch/0.3, catch_pre = c(0, 87995, 131464, 343926, 699914, 1134037, 1515615, 1690661, 1741119, 2661833, 41257681)) %>% mutate(sel03_pre = catch_pre/0.3)
 
-### survibal
+### survival
 naa$sur = NA
 for(i in 1:nrow(naa)){
   if(i < (nrow(naa)-1)){
@@ -454,6 +454,35 @@ for(i in 1:nrow(naa)){
     naa[i, "sur"] = naa$sel03[(i+1)]/(naa$sel03_pre[i]+naa$sel03_pre[i+1])
   }
 }
+summary(naa)
+
+# logis = data.frame(length_mm = seq(15, 315, 10)) %>% mutate(selectivity = 0.738/(1+1525*exp(-0.0824*length_mm)))
+# param = nls(selectivity ~ a/(1+b*exp(c*length_mm)), data = logis, start = c(a = 1, b = 0.1, c = 0.1))
+# summary(param)
+a = 1524.581
+b = 0.082366
+c = 0.738107
+
+length = mean_length_weight_at_age %>% select(age, mean_mm) %>% mutate(age = as.numeric(age))
+naa = left_join(naa, length, by = "age")
+
+naa$selectivity = NA
+for(i in 1:nrow(naa)){
+  naa[i, "selectivity"] = c/{1+a*exp(-b*naa$mean_mm[i])}
+}
+
+# weight = mean_length_weight_at_age %>% select(age, weight) %>% mutate(age = as.numeric(age))
+# naa = left_join(naa, weight, by = "age")
+naa$weight = NA
+for(i in 1:nrow(naa)){
+  naa[i, "weight"] = (1.86739*10^(-5))*naa$mean_mm[i]^(3.06725547)
+}
+
+### number in January
+M = 2.5/20
+
+exp(log(1-(sum(okisoko$漁獲量の合計)/(9897*exp(-2/12*0.125)-460/6*exp(-2/12*0.125)))/exp(-M/2))/6)
+f = log(1-((sum(okisoko$漁獲量の合計)/(9897*exp(-2/12*0.125)-460*exp(-2/12*0.125)))/exp(-M/2)))
 
 
-
+naa$biomass = naa$sur*(naa$sel03*0.3/naa$selectivity)*0.001*0.001
