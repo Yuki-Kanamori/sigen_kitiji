@@ -434,3 +434,26 @@ fig8 = grid.arrange(kake, niso, tra, w, ncol = 1)
 ggsave(file = "fig8.png", plot = fig8, units = "in", width = 11.69, height = 8.27)
 
 
+
+# stock abundance ---------------------------------------------------------
+naa = read.csv("number_at_age.csv")
+naa = naa[1:(nrow(naa)-1), 3:ncol(naa)]
+naa = apply(naa, 1, sum)
+naa = naa %>% data.frame() %>% mutate(age = 0:10)
+colnames(naa) = c('catch', 'age')
+
+naa = naa %>% mutate(sel03 = naa$catch/0.3, catch_pre = c(0, 87995, 131464, 343926, 699914, 1134037, 1515615, 1690661, 1741119, 2661833, 41257681)) %>% mutate(sel03_pre = catch_pre/0.3)
+
+### survibal
+naa$sur = NA
+for(i in 1:nrow(naa)){
+  if(i < (nrow(naa)-1)){
+    # naa[i, "sur"] = naa[(i+1), naa$sel03]/naa[i, naa$sel03_pre]
+    naa[i, "sur"] = naa$sel03[(i+1)]/naa$sel03_pre[i]
+  }else{
+    naa[i, "sur"] = naa$sel03[(i+1)]/(naa$sel03_pre[i]+naa$sel03_pre[i+1])
+  }
+}
+
+
+
