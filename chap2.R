@@ -336,17 +336,100 @@ ggsave(file = "fig6.png", plot = fig6, units = "in", width = 11.69, height = 8.2
 
 # weighted cpue ----------------------------------------------------------
 gyo_old = read.csv("gyoseki_old.csv", fileEncoding = "CP932")
-
-
+unique(gyo_old$method)
 
 okisoko = read.csv("okisoko.csv")
 summary(okisoko$魚種名)
 colnames(okisoko)
 summary(okisoko)
+okisoko2 = okisoko %>% mutate(method = ifelse(漁法 == 102, "2そう曳き", ifelse(漁法 == 103, "トロール", "かけ廻し"))) %>%
+  mutate(pref = ifelse(県コード == 13, "青森", ifelse(県コード == 14, "岩手", ifelse(県コード == 15, "宮城", ifelse(県コード == 18, "茨城", "福島"))))) %>% select(漁区名, method, pref, 漁獲量の合計, 網数の合計) %>% filter(漁区名 != "襟裳西")
+summary(okisoko2$漁区名)
+summary(okisoko2)
+cpue = ddply(okisoko2, .(method), summarize, effort = sum(網数の合計), catch = sum(漁獲量の合計))
+cpue$year = 2019
 
-w_cpue = okisoko %>% mutate(method = ifelse(漁法 == 102, "2そう曳き", ifelse(漁法 == 103, "トロール", "かけ廻し"))) %>%
-  mutate(pref = ifelse(県コード == 13, "青森", ifelse(県コード == 14, "岩手", ifelse(県コード == 15, "宮城", ifelse(県コード == 18, "茨城", "福島"))))) %>% select(漁区名, method, pref, 漁獲量の合計, 網数の合計) %>% dplyr::rename(area = 漁区名, catch = 漁獲量の合計, effort = 網数の合計) %>% group_by(method, year) %>% summarize()
+cpue2 = rbind(gyo_old, cpue) %>% mutate(cpue = catch/effort)
+mean_cpue = ddply(cpue2, .(method), summarize, m_cpue = mean(cpue))
+cpue2 = left_join(cpue2, mean_cpue, by = "method") %>% mutate(cpue2 = cpue/m_cpue) %>% mutate(bunsi = catch*cpue2)
 
-okisoko = okisoko %>% mutate(method = ifelse(漁法 == 102, "2そう曳き", ifelse(漁法 == 103, "トロール", "かけ廻し"))) %>%
-  mutate(pref = ifelse(県コード == 13, "青森", ifelse(県コード == 14, "岩手", ifelse(県コード == 15, "宮城", ifelse(県コード == 18, "茨城", "福島"))))) %>% select(漁区名, method, pref, 漁獲量の合計, 網数の合計) %>% dplyr::rename(area = 漁区名, catch = 漁獲量の合計, effort = 網数の合計) %>% mutate(cpue = catch/effort)
-w_cpue = 
+y_cpue = ddply(cpue2, .(year), summarize, bunsi = sum(bunsi))
+y_catch = ddply(cpue2, .(year), summarize, total_catch = sum(catch))
+w_cpue = left_join(y_cpue, y_catch, by = "year") %>% mutate(weighted_cpue = bunsi/total_catch)
+
+# cpue2 = cpue2 %>% mutate(label = ifelse(cpue2$method == "かけ廻し", "尻屋崎〜岩手沖のかけ廻し", ifelse(cpue2$method == "トロール", "金華山~房総のトロール", "岩手沖の2そう曳き")))
+cpue2$label = ifelse(cpue2$method == "かけ廻し", "尻屋崎〜岩手沖のかけ廻し", ifelse(cpue2$method == "トロール", "金華山~房総のトロール", "岩手沖の2そう曳き"))
+unique(cpue2$label)
+levels(cpue2$label)
+cpue2$label = factor(cpue2$label, levels = c("尻屋崎〜岩手沖のかけ廻し", "岩手沖の2そう曳き", "金華山~房総のトロール"))
+
+
+### かけ廻し
+g = ggplot(cpue2 %>% filter(method == "かけ廻し"), aes(x = year, y = cpue, shape = label))
+p = geom_point(shape = 15, size = 3)
+l = geom_line(linetype = "dotted", size = 1)
+lab = labs(x = "年", y = "CPUE", shape = "")
+f = facet_wrap(~ label, ncol = 1)
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_blank(),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_text(size = 13),
+           strip.text.x = element_text(size = rel(1.5)))
+kake = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 3), limits=c(1972, 2019))
+
+### 2そう
+g = ggplot(cpue2 %>% filter(method == "2そう曳き"), aes(x = year, y = cpue, shape = label))
+p = geom_point(shape = 17, size = 3)
+l = geom_line(linetype = "solid", size = 1)
+lab = labs(x = "年", y = "CPUE", shape = "")
+f = facet_wrap(~ label, ncol = 1)
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_blank(),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_text(size = 13),
+           strip.text.x = element_text(size = rel(1.5)))
+niso = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 3), limits=c(1972, 2019))
+
+### トロール
+g = ggplot(cpue2 %>% filter(method == "トロール"), aes(x = year, y = cpue, shape = label))
+p = geom_point(shape = 18, size = 4)
+l = geom_line(linetype = "dotted", size = 1)
+lab = labs(x = "年", y = "CPUE", shape = "")
+f = facet_wrap(~ label, ncol = 1)
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_blank(),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_text(size = 13),
+           strip.text.x = element_text(size = rel(1.5)))
+tra = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 3), limits=c(1972, 2019))
+
+### 重み付きCPUE
+w_cpue$label = "太平洋北部"
+g = ggplot(w_cpue, aes(x = year, y = weighted_cpue))
+p = geom_point(shape = 20, size = 4)
+l = geom_line(size = 0.6, linetype = "solid")
+lab = labs(x = "年", y = "重み付CPUE \n（相対値）", shape = "")
+f = facet_wrap(~ label, ncol = 1)
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_text(size = 13),
+           strip.text.x = element_text(size = rel(1.5)))
+w = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 3), limits=c(1972, 2019))
+
+require(gridExtra)
+fig8 = grid.arrange(kake, niso, tra, w, ncol = 1)
+ggsave(file = "fig8.png", plot = fig8, units = "in", width = 11.69, height = 8.27)
+
