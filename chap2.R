@@ -469,13 +469,14 @@ summary(trawl)
 old_length = olddata %>% filter(data == 'length') %>% gather(key = year_tag, value = mean_mm, 2:(ncol(olddata)-1)) %>% mutate(year = as.numeric(str_sub(year_tag, 2, 5))) %>% select(-year_tag, -data)
 summary(old_trawl)
 
-#mean_length_weight_at_age = read.csv("mean_length_weight_at_age.csv")
+mean_length_weight_at_age = read.csv("mean_length_weight_at_age.csv")
 length = mean_length_weight_at_age %>% select(age, mean_mm) %>% mutate(age = as.numeric(age), year = 2019) %>% filter(age > 1)
 length = rbind(old_length, length)
 summary(length)
 
 # combine the catch data from the fishing
-#okisoko = read.csv("okisoko.csv")
+okisoko = read.csv("okisoko.csv")
+old_catchF = olddata %>% filter(data == 'catch_fisheries') %>% gather(key = year_tag, value = catch, 2:(ncol(olddata)-1)) %>% mutate(year = as.numeric(str_sub(year_tag, 2, 5))) %>% select(-year_tag, -data,-age)
 catch2019 = data.frame(catch = sum(okisoko$漁獲量の合計)/1000, year = 2019)
 catchF = rbind(old_catchF, catch2019)
 summary(catchF)
