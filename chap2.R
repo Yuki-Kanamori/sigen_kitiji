@@ -451,7 +451,7 @@ naa$year = 2019
 
 trawl = rbind(old_trawl, naa)
 
-length = mean_length_weight_at_age %>% select(age, mean_mm) %>% mutate(age = as.numeric(age), year = 2019)
+length = mean_length_weight_at_age %>% select(age, mean_mm) %>% mutate(age = as.numeric(age), year = 2019) %>% filter(age > 1)
 length = rbind(old_length, length)
 
 ### survival rate at age
@@ -544,11 +544,22 @@ for(i in min(length$year):(max(length$year)-1)){
 #   naa[i, "selectivity"] = c/{1+a*exp(-b*naa$mean_mm[i])}
 # }
 
-# weight = mean_length_weight_at_age %>% select(age, weight) %>% mutate(age = as.numeric(age))
-# naa = left_join(naa, weight, by = "age")
 naa$weight = NA
 for(i in 1:nrow(naa)){
   naa[i, "weight"] = (1.86739*10^(-5))*naa$mean_mm[i]^(3.06725547)
+}
+
+weight = NULL
+for(i in min(length$year):(max(length$year)-1)){
+  # i = min(length$year)
+  data = length %>% filter(year == i) %>% arrange(age)
+  temp_w = matrix(NA, ncol = 1, nrow = 9)
+  
+  for(j in 1:9){
+    temp_w[j, 1] = (1.86739*10^(-5))*data$mean_mm[j]^(3.06825547)
+  }
+  temp_w2 = data.frame(weight = temp_w[,1], year = mean(data$year), age = 2:10)
+  weight = rbind(weight, temp_w2)
 }
 
 ### number in January
