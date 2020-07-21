@@ -457,16 +457,39 @@ length = rbind(old_length, length)
 ### survival rate at age
 survival = NULL
 for(i in min(trawl$year):(max(trawl$year)-1)){
+  # i = min(trawl$year)
   data_lastyr = trawl %>% filter(year == i)
   data_thisyr = trawl %>% filter(year == (i+1))
-  data = left_join(data_lastyr, data_thisyr, by = 'age')
+  data = left_join(data_lastyr, data_thisyr, by = 'age') %>% arrange(age)
   surv = matrix(NA, ncol = 1, nrow = 9)
   
-  for(j in 2:10){
-    if(j < 10){
-      surv[(j-1), 1] = data$number.y[(j)]/data$number.x[(j-1)]
-    }else{
-      surv[(j-1), 1] = data$number.y[(j)]/(data$number.x[j]+data$number.x[j-1])
+  if(i < 2006){
+    for(j in 2:5){
+      if(j < 5){
+        surv[(j-1), 1] = data$number.y[(j)]/data$number.x[(j-1)]
+      }else{
+        surv[(j-1), 1] = data$number.y[(j)]/(data$number.x[j]+data$number.x[j-1])
+      }
+  }
+  }
+  
+  if(i == 2006){
+    for(j in 2:5){
+      if(j < 5){
+        surv[(j-1), 1] = data$number.y[(j)]/data$number.x[(j-1)]
+      }else{
+        surv[(j-1), 1] = (data$number.y[(j)]+data$number.y[(j+1)]+data$number.y[(j+2)]+data$number.y[(j+3)]+data$number.y[(j+4)]+data$number.y[(j+5)])/(data$number.x[j]+data$number.x[j-1])
+      }
+    }
+  }
+  
+  if(i > 2006){
+    for(j in 2:10){
+      if(j < 10){
+        surv[(j-1), 1] = data$number.y[(j)]/data$number.x[(j-1)]
+      }else{
+        surv[(j-1), 1] = data$number.y[(j)]/(data$number.x[j]+data$number.x[j-1])
+      }
     }
   }
   survival = rbind(survival, surv)
@@ -499,6 +522,32 @@ survival = data.frame(surv = survival, year = rep(1996:2019, each = 9), age = re
 a = 1524.581
 b = 0.082366
 c = 0.738107
+
+q = NULL
+for(i in min(length$year):(max(length$year)-1)){
+  i = max(length$year)
+  data = length %>% filter(year == i) %>% arrange(age)
+  temp_q = matrix(NA, ncol = 1, nrow = 10)
+  
+  for(j in 1:10){
+    temp_q[j, 1] = c/{1+a*exp(-b*data$mean_mm[j])}
+  }
+  q = rbind(q, temp_q)
+}  
+q = data.frame(selectivity = q, year = rep(1995:2019, each = 10), age = rep(1:10))  
+  
+  for(j in 2:10){
+    if(j < 10){
+      temp_q[(j-1), 1] = data$number.y[(j)]/data$number.x[(j-1)]
+    }else{
+      temp_q[(j-1), 1] = data$number.y[(j)]/(data$number.x[j]+data$number.x[j-1])
+    }
+  }
+  survival = rbind(survival, surv)
+}
+survival = data.frame(surv = survival, year = rep(1996:2019, each = 9), age = rep(2:10))
+
+
 
 length = mean_length_weight_at_age %>% select(age, mean_mm) %>% mutate(age = as.numeric(age))
 naa = left_join(naa, length, by = "age")
