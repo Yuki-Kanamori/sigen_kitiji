@@ -453,6 +453,7 @@ trawl = rbind(old_trawl, naa)
 
 length = mean_length_weight_at_age %>% select(age, mean_mm) %>% mutate(age = as.numeric(age), year = 2019) %>% filter(age > 1)
 length = rbind(old_length, length)
+summary(length)
 
 ### survival rate at age
 survival = NULL
@@ -519,12 +520,14 @@ survival = data.frame(surv = survival, year = rep(1996:2019, each = 9), age = re
 # logis = data.frame(length_mm = seq(15, 315, 10)) %>% mutate(selectivity = 0.738/(1+1525*exp(-0.0824*length_mm)))
 # param = nls(selectivity ~ a/(1+b*exp(c*length_mm)), data = logis, start = c(a = 1, b = 0.1, c = 0.1))
 # summary(param)
+
+### selectivity at age
 a = 1524.581
 b = 0.082366
 c = 0.738107
 
 q = NULL
-for(i in min(length$year):(max(length$year)-1)){
+for(i in min(length$year):max(length$year)){
   # i = max(length$year)-1
   data = length %>% filter(year == i) %>% arrange(age)
   temp_q = matrix(NA, ncol = 1, nrow = 9)
@@ -535,6 +538,7 @@ for(i in min(length$year):(max(length$year)-1)){
   temp_q2 = data.frame(q = temp_q[,1], year = mean(data$year), age = 2:10)
   q = rbind(q, temp_q2)
 }  
+summary(q)
 
 # length = mean_length_weight_at_age %>% select(age, mean_mm) %>% mutate(age = as.numeric(age))
 # naa = left_join(naa, length, by = "age")
@@ -549,8 +553,9 @@ for(i in min(length$year):(max(length$year)-1)){
 #   naa[i, "weight"] = (1.86739*10^(-5))*naa$mean_mm[i]^(3.06725547)
 # }
 
+### weight at age
 weight = NULL
-for(i in min(length$year):(max(length$year)-1)){
+for(i in min(length$year):max(length$year)){
   # i = min(length$year)
   data = length %>% filter(year == i) %>% arrange(age)
   temp_w = matrix(NA, ncol = 1, nrow = 9)
@@ -561,6 +566,34 @@ for(i in min(length$year):(max(length$year)-1)){
   temp_w2 = data.frame(weight = temp_w[,1], year = mean(data$year), age = 2:10)
   weight = rbind(weight, temp_w2)
 }
+summary(weight)
+
+### number at age when selectivity changes at age
+abund_oct = NULL
+for(i in min(trawl$year):max(trawl$year)){
+  i = min(trawl$year)
+  data_trawl = trawl %>% filter(year == i)
+  data_q = q %>% filter(year == i)
+  data_weight = weight %>% filter(year == i)
+  data = left_join(data_trawl, data_q, by = c("age", "year")) %>% filter(age > 1) %>% arrange(age)
+  data = left_join(data, data_weight,  by = c("age", "year")) %>% filter(age > 1) %>% arrange(age)
+  
+  temp_naa_sel = matrix(NA, ncol = 1, nrow = 9)
+  temp_baa_sel = matrix(NA, ncol = 1, nrow = 9)
+
+  for(j in 1:9){
+    #j = 9
+    temp_naa_sel[j, 1] = data$number[j]/data$q[j]
+  }
+  
+  for(j in 1:9){
+    temp_baa_sel[j, 1] = temp_naa_sel[j, 1]*data$weight[j]*(0.001)^2
+  }
+
+  temp_abund_oct = data.frame(number_sel = temp_naa_sel[, 1], biomass_sel = temp_baa_sel[, 1], year = mean(data$year), age = 2:10)
+  abund_oct = rbind(abund_oct, temp_abund_oct)
+}
+
 
 ### number in January
 M = 2.5/20
