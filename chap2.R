@@ -525,37 +525,24 @@ c = 0.738107
 
 q = NULL
 for(i in min(length$year):(max(length$year)-1)){
-  i = max(length$year)
+  # i = max(length$year)-1
   data = length %>% filter(year == i) %>% arrange(age)
-  temp_q = matrix(NA, ncol = 1, nrow = 10)
+  temp_q = matrix(NA, ncol = 1, nrow = 9)
   
-  for(j in 1:10){
+  for(j in 1:9){
     temp_q[j, 1] = c/{1+a*exp(-b*data$mean_mm[j])}
   }
-  q = rbind(q, temp_q)
+  temp_q2 = data.frame(q = temp_q[,1], year = mean(data$year), age = 2:10)
+  q = rbind(q, temp_q2)
 }  
-q = data.frame(selectivity = q, year = rep(1995:2019, each = 10), age = rep(1:10))  
-  
-  for(j in 2:10){
-    if(j < 10){
-      temp_q[(j-1), 1] = data$number.y[(j)]/data$number.x[(j-1)]
-    }else{
-      temp_q[(j-1), 1] = data$number.y[(j)]/(data$number.x[j]+data$number.x[j-1])
-    }
-  }
-  survival = rbind(survival, surv)
-}
-survival = data.frame(surv = survival, year = rep(1996:2019, each = 9), age = rep(2:10))
 
-
-
-length = mean_length_weight_at_age %>% select(age, mean_mm) %>% mutate(age = as.numeric(age))
-naa = left_join(naa, length, by = "age")
-
-naa$selectivity = NA
-for(i in 1:nrow(naa)){
-  naa[i, "selectivity"] = c/{1+a*exp(-b*naa$mean_mm[i])}
-}
+# length = mean_length_weight_at_age %>% select(age, mean_mm) %>% mutate(age = as.numeric(age))
+# naa = left_join(naa, length, by = "age")
+# 
+# naa$selectivity = NA
+# for(i in 1:nrow(naa)){
+#   naa[i, "selectivity"] = c/{1+a*exp(-b*naa$mean_mm[i])}
+# }
 
 # weight = mean_length_weight_at_age %>% select(age, weight) %>% mutate(age = as.numeric(age))
 # naa = left_join(naa, weight, by = "age")
