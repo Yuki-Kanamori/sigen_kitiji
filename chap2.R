@@ -544,10 +544,10 @@ for(i in min(length$year):(max(length$year)-1)){
 #   naa[i, "selectivity"] = c/{1+a*exp(-b*naa$mean_mm[i])}
 # }
 
-naa$weight = NA
-for(i in 1:nrow(naa)){
-  naa[i, "weight"] = (1.86739*10^(-5))*naa$mean_mm[i]^(3.06725547)
-}
+# naa$weight = NA
+# for(i in 1:nrow(naa)){
+#   naa[i, "weight"] = (1.86739*10^(-5))*naa$mean_mm[i]^(3.06725547)
+# }
 
 weight = NULL
 for(i in min(length$year):(max(length$year)-1)){
