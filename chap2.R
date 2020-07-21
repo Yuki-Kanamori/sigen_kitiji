@@ -707,14 +707,13 @@ est2 = ddply(est2, .(year, age2), summarize, total = sum(number))
 summary(est2)
 
 levels(est2$age2) 
-est2$age3 = as.factor(as.character(est2$age2))
-summary(est2)
-est2$age3 = factor(est2$age3, levels = c("5歳", "2-4歳以上"))
-levels(est2$age3)
+unique(est$age2)
+est2$age2 = factor(est2$age2, levels = c("5歳以上", "2-4歳"))
+levels(est2$age2)
 
-g = ggplot(est2, aes(x = year, y = total/1000000, fill = age3))
+g = ggplot(est2, aes(x = year, y = total/1000000, fill = age2))
 b = geom_bar(stat = "identity", width = 0.5, colour = "black")
-lab = labs(x = "年", y = "資源尾数（百万尾）")
+lab = labs(x = "年", y = "資源尾数（百万尾）", legend = NULL)
 col_age = c("black", "white")
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
@@ -722,8 +721,10 @@ th = theme(panel.grid.major = element_blank(),
            axis.text.y = element_text(size = rel(1.5)),
            axis.title.x = element_text(size = rel(1.5)),
            axis.title.y = element_text(size = rel(1.5)),
-           legend.title = element_text(size = 13),
-           strip.text.x = element_text(size = rel(1.5)))
-c = scale_fill_manual(values = col_age)
+           legend.title = element_blank(),
+           strip.text.x = element_text(size = rel(1.5)),
+           legend.position = c(0.1, 0.8),
+           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+c = scale_fill_manual(values =  c("black", "white"))
 fig11 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2020, by = 1))
 ggsave(file = "fig11.png", plot = fig5, units = "in", width = 11.69, height = 8.27)
