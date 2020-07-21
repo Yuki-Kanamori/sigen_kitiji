@@ -640,15 +640,15 @@ for(i in (min(abund_oct_sel$year)+1):max(abund_oct_sel$year)){
 # Z = terminal_F + M
 # surv_2month = exp(-Z/6)
 
-naa$number_2019j = NA
-for(i in 1:nrow(naa)){
-  naa[i, "number_2019j"] = surv_2month*(naa$catch_pre[i]/naa$selectivity[i])
-}
-# naa$catch_pre/naa$selectivity
-
-naa$biomass_2019j = naa$number_2019j*naa$weight*(0.001)^2
-naa$number_2020j = (naa$catch_pre[i]/naa$selectivity[i])*surv_2month
-naa$biomass_j_next = (naa$catch_pre[i]/naa$selectivity[i])*surv_2month
+# naa$number_2019j = NA
+# for(i in 1:nrow(naa)){
+#   naa[i, "number_2019j"] = surv_2month*(naa$catch_pre[i]/naa$selectivity[i])
+# }
+# # naa$catch_pre/naa$selectivity
+# 
+# naa$biomass_2019j = naa$number_2019j*naa$weight*(0.001)^2
+# naa$number_2020j = (naa$catch_pre[i]/naa$selectivity[i])*surv_2month
+# naa$biomass_j_next = (naa$catch_pre[i]/naa$selectivity[i])*surv_2month
 
 
 ### abundance in January
