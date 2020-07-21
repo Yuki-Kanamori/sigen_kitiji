@@ -574,9 +574,9 @@ for(i in min(length$year):max(length$year)){
 summary(weight)
 
 ### number at age when selectivity changes at age
-abund_oct = NULL
+abund_oct_sel = NULL
 for(i in min(trawl$year):max(trawl$year)){
-  i = min(trawl$year)
+  #i = min(trawl$year)
   data_trawl = trawl %>% filter(year == i)
   data_q = q %>% filter(year == i)
   data_weight = weight %>% filter(year == i)
@@ -596,20 +596,49 @@ for(i in min(trawl$year):max(trawl$year)){
   }
 
   temp_abund_oct = data.frame(number_sel = temp_naa_sel[, 1], biomass_sel = temp_baa_sel[, 1], year = mean(data$year), age = 2:10)
-  abund_oct = rbind(abund_oct, temp_abund_oct)
+  abund_oct_sel = rbind(abund_oct_sel, temp_abund_oct)
+}
+
+### terminal F and Z
+M = 2.5/20 #fixed
+abund_jan_forF_notneeded = NULL
+fishing_rate = NULL
+Z_notneeded = NULL
+survival_2month = NULL
+
+for(i in (min(abund_oct_sel$year)+1):max(abund_oct_sel$year)){
+  # i = min(abund_oct_sel$year)+1
+  data_oct_sel_last = abund_oct_sel %>% filter(year == (i-1)) %>% na.omit()
+  data_catchF_last = catchF %>% filter(year == (i-1))
+  data_catchF_this = catchF %>% filter(year == i)
+  
+  temp_abund_jan = sum(data_oct_sel_last$biomass_sel)*exp(-2/12*0.125)-data_catchF_last$catch/6*exp(-2/12*0.125)
+  temp_fishing_rate = data_catchF_this$catch/temp_abund_jan
+  temp_f = -log(1-(temp_fishing_rate/exp(-M/2)))
+  temp_Z = temp_f + M
+  temp_survival_2month = exp(-temp_Z/6)
+  
+  abund_jan_forF_notneeded_pre = data.frame(biomass = temp_abund_jan, year = i)
+  fishing_rate_pre = data.frame(f = temp_f, year = i)
+  Z_notneeded_pre = data.frame(z = temp_Z, year = i)
+  survival_2month_pre = data.frame(surv = temp_survival_2month, year = i)
+
+  abund_jan_forF_notneeded = rbind(abund_jan_forF_notneeded, abund_jan_forF_notneeded_pre)
+  fishing_rate = rbind(fishing_rate, fishing_rate_pre)
+  Z_notneeded = rbind(Z_notneeded, Z_notneeded_pre)
+  survival_2month = rbind(survival_2month, survival_2month_pre)
 }
 
 
 
-
-### number in January
-M = 2.5/20
-catch_this_yr = sum(okisoko$漁獲量の合計)/1000 # metric tons
-biomass_jan_this_yr = 9897*exp(-2/12*0.125)-460/6*exp(-2/12*0.125)
-fishing_rate = catch_this_yr/biomass_jan_this_yr
-terminal_F = -log(1-(fishing_rate/exp(-M/2)))
-Z = terminal_F + M
-surv_2month = exp(-Z/6)
+# ### number in January
+# M = 2.5/20
+# catch_this_yr = sum(okisoko$漁獲量の合計)/1000 # metric tons
+# biomass_jan_this_yr = 9897*exp(-2/12*0.125)-460/6*exp(-2/12*0.125)
+# fishing_rate = catch_this_yr/biomass_jan_this_yr
+# terminal_F = -log(1-(fishing_rate/exp(-M/2)))
+# Z = terminal_F + M
+# surv_2month = exp(-Z/6)
 
 naa$number_2019j = NA
 for(i in 1:nrow(naa)){
