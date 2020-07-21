@@ -319,7 +319,7 @@ lab = labs(x = "年", y = "漁獲量 (トン)", fill = "漁業種")
 col_catch = c("grey50", "white", "grey0")
 c = scale_fill_manual(values = col_catch)
 fig5 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")
-ggsave(file = "fig5.png", plot = fig5, units = "in", width = 11.69, height = 8.27)
+ggsave(file = "fig5.pdf", plot = fig5, units = "in", width = 11.69, height = 8.27)
 
 
 
@@ -344,7 +344,7 @@ lab = labs(x = "年", y = "有漁網数 (千)", shape = "漁業種")
 # col_catch = c("grey50", "white", "grey0")
 # c = scale_fill_manual(values = col_catch)
 fig6 = g+p+l+lab+theme_bw(base_family = "HiraKakuPro-W3")
-ggsave(file = "fig6.png", plot = fig6, units = "in", width = 11.69, height = 8.27)
+ggsave(file = "fig6.pdf", plot = fig6, units = "in", width = 11.69, height = 8.27)
 
 
 
@@ -445,13 +445,14 @@ w = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position 
 
 require(gridExtra)
 fig8 = grid.arrange(kake, niso, tra, w, ncol = 1)
-ggsave(file = "fig8.png", plot = fig8, units = "in", width = 11.69, height = 8.27)
+ggsave(file = "fig8.pdf", plot = fig8, units = "in", width = 11.69, height = 8.27)
 
 
 
 # step 4; estimation of stock abundance (number & biomass) ---------------------------------------------------------
 olddata = read.csv("olddata_trawl_length.csv") 
 
+# combine the catch data from the trawl surveys
 old_trawl = olddata %>% filter(data == 'trawl') %>% gather(key = year_tag, value = number, 2:(ncol(olddata)-1)) %>% mutate(year = as.numeric(str_sub(year_tag, 2, 5))) %>% select(-year_tag, -data)
 
 naa = read.csv("number_at_age.csv")
@@ -460,19 +461,24 @@ naa = apply(naa, 1, sum)
 naa = naa %>% data.frame() %>% mutate(age = 0:10) %>% filter(age != 0)
 colnames(naa) = c('number', 'age')
 naa$year = 2019
-
 trawl = rbind(old_trawl, naa)
 
+# combine the length data
 old_length = olddata %>% filter(data == 'length') %>% gather(key = year_tag, value = mean_mm, 2:(ncol(olddata)-1)) %>% mutate(year = as.numeric(str_sub(year_tag, 2, 5))) %>% select(-year_tag, -data)
 summary(old_trawl)
 
+mean_length_weight_at_age = read.csv("mean_length_weight_at_age.csv")
 length = mean_length_weight_at_age %>% select(age, mean_mm) %>% mutate(age = as.numeric(age), year = 2019) %>% filter(age > 1)
 length = rbind(old_length, length)
 summary(length)
 
+# combine the catch data from the fishing
+okisoko = read.csv("okisoko.csv")
 catch2019 = data.frame(catch = sum(okisoko$漁獲量の合計)/1000, year = 2019)
 catchF = rbind(old_catchF, catch2019)
 summary(catchF)
+
+
 
 ### survival rate at age
 survival = NULL
@@ -516,29 +522,6 @@ for(i in min(trawl$year):(max(trawl$year)-1)){
 }
 survival = data.frame(surv = survival, year = rep(1996:2019, each = 9), age = rep(2:10))
 
-# naa = read.csv("number_at_age.csv")
-# naa = naa[1:(nrow(naa)-1), 3:ncol(naa)]
-# naa = apply(naa, 1, sum)
-# naa = naa %>% data.frame() %>% mutate(age = 0:10)
-# colnames(naa) = c('catch', 'age')
-# 
-# naa = naa %>% mutate(sel03 = naa$catch/0.3, catch_pre = c(0, 87995, 131464, 343926, 699914, 1134037, 1515615, 1690661, 1741119, 2661833, 41257681)) %>% mutate(sel03_pre = catch_pre/0.3)
-# 
-# ### survival
-# naa$sur = NA
-# for(i in 1:nrow(naa)){
-#   if(i < (nrow(naa)-1)){
-#     # naa[i, "sur"] = naa[(i+1), naa$sel03]/naa[i, naa$sel03_pre]
-#     naa[i, "sur"] = naa$sel03[(i+1)]/naa$sel03_pre[i]
-#   }else{
-#     naa[i, "sur"] = naa$sel03[(i+1)]/(naa$sel03_pre[i]+naa$sel03_pre[i+1])
-#   }
-# }
-# summary(naa)
-
-# logis = data.frame(length_mm = seq(15, 315, 10)) %>% mutate(selectivity = 0.738/(1+1525*exp(-0.0824*length_mm)))
-# param = nls(selectivity ~ a/(1+b*exp(c*length_mm)), data = logis, start = c(a = 1, b = 0.1, c = 0.1))
-# summary(param)
 
 ### selectivity at age
 a = 1524.581
@@ -559,18 +542,7 @@ for(i in min(length$year):max(length$year)){
 }  
 summary(q)
 
-# length = mean_length_weight_at_age %>% select(age, mean_mm) %>% mutate(age = as.numeric(age))
-# naa = left_join(naa, length, by = "age")
-# 
-# naa$selectivity = NA
-# for(i in 1:nrow(naa)){
-#   naa[i, "selectivity"] = c/{1+a*exp(-b*naa$mean_mm[i])}
-# }
 
-# naa$weight = NA
-# for(i in 1:nrow(naa)){
-#   naa[i, "weight"] = (1.86739*10^(-5))*naa$mean_mm[i]^(3.06725547)
-# }
 
 ### weight at age
 weight = NULL
@@ -586,6 +558,8 @@ for(i in min(length$year):max(length$year)){
   weight = rbind(weight, temp_w2)
 }
 summary(weight)
+
+
 
 ### number at age when selectivity changes at age
 abund_oct_sel = NULL
@@ -612,6 +586,8 @@ for(i in min(trawl$year):max(trawl$year)){
   temp_abund_oct = data.frame(number_sel = temp_naa_sel[, 1], biomass_sel = temp_baa_sel[, 1], year = mean(data$year), age = 2:10)
   abund_oct_sel = rbind(abund_oct_sel, temp_abund_oct)
 }
+
+
 
 ### fishing rate, F, Z, and survival rate within 2 month
 M = 2.5/20 #fixed
@@ -643,26 +619,6 @@ for(i in (min(abund_oct_sel$year)+1):max(abund_oct_sel$year)){
   survival_2month = rbind(survival_2month, survival_2month_pre)
 }
 
-
-
-# ### number in January
-# M = 2.5/20
-# catch_this_yr = sum(okisoko$漁獲量の合計)/1000 # metric tons
-# biomass_jan_this_yr = 9897*exp(-2/12*0.125)-460/6*exp(-2/12*0.125)
-# fishing_rate = catch_this_yr/biomass_jan_this_yr
-# terminal_F = -log(1-(fishing_rate/exp(-M/2)))
-# Z = terminal_F + M
-# surv_2month = exp(-Z/6)
-
-# naa$number_2019j = NA
-# for(i in 1:nrow(naa)){
-#   naa[i, "number_2019j"] = surv_2month*(naa$catch_pre[i]/naa$selectivity[i])
-# }
-# # naa$catch_pre/naa$selectivity
-# 
-# naa$biomass_2019j = naa$number_2019j*naa$weight*(0.001)^2
-# naa$number_2020j = (naa$catch_pre[i]/naa$selectivity[i])*surv_2month
-# naa$biomass_j_next = (naa$catch_pre[i]/naa$selectivity[i])*surv_2month
 
 
 ### abundance in January
@@ -706,33 +662,14 @@ for(i in (min(abund_oct_sel$year)+1):(max(abund_oct_sel$year)+1)){
       temp_biomass[k, 1] = temp_number[k, 1]*data_weight$weight[k]*(0.001)^2
     }
     
-    #temp_est_latest = data.frame(number = temp_number[, 1], biomass = temp_biomass[, 1], year = i, age = 2:10)
     temp_est = data.frame(number = temp_number[, 1], biomass = temp_biomass[, 1], year = i, age = 2:10)
     est = rbind(est, temp_est)
   }
-  # data_survival = survival_2month %>% filter(year == i)
-  # data_abund_oct_sel = abund_oct_sel %>% filter(year == (i-1)) %>% arrange(age)
-  # data_weight = weight %>% filter(year == (i-1)) %>% arrange(age)
-  # 
-  # temp_number = matrix(NA, ncol = 1, nrow = nrow(data_abund_oct_sel))
-  # temp_biomass = matrix(NA, ncol = 1, nrow = nrow(data_abund_oct_sel))
-  # 
-  # for(j in 1:nrow(data_abund_oct_sel)){
-  #   temp_number[j, 1] = data_survival$surv*data_abund_oct_sel$number_sel[j]
-  # }
-  # 
-  # for(k in 1:nrow(data_abund_oct_sel)){
-  #   temp_biomass[k, 1] = temp_number[k, 1]*data_weight$weight[k]*(0.001)^2
-  # }
-  
-  # temp_est = data.frame(number = temp_number[, 1], biomass = temp_biomass[, 1], year = (i+1), age = 2:10)
-  # est = rbind(est, temp_est)
-  
-  #est = rbind(temp_est, temp_est_latest)
 }
 
 
-### figures (fig10, fig11)
+
+### figures 
 ### year trend of stock biomass
 trend = est %>% select(year, biomass) %>% na.omit() %>% dplyr::group_by(year) %>% dplyr::summarize(total = sum(biomass))
 low = (max(trend$total)-min(trend$total))*1/3+min(trend$total)
@@ -753,10 +690,11 @@ th = theme(panel.grid.major = element_blank(),
 level_l = geom_hline(yintercept = low/1000, linetype = "dashed", color = "gray50")
 level_h = geom_hline(yintercept = high/1000, linetype = "dashed", color = "gray50")
 fig10 = g+p+l+lab+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1996, 2020, by = 1))+level_l+level_h
-ggsave(file = "fig10.png", plot = fig10, units = "in", width = 11.69, height = 8.27)
+ggsave(file = "fig10.pdf", plot = fig10, units = "in", width = 11.69, height = 8.27)
 
 
 
+### year trend of stock number
 est = est %>% mutate(age2 = ifelse(age > 4, "5歳以上", "2-4歳"))
 summary(est)
 
@@ -785,18 +723,4 @@ th = theme(panel.grid.major = element_blank(),
            strip.text.x = element_text(size = rel(1.5)))
 c = scale_fill_manual(values = col_age)
 fig11 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2020, by = 1))
-ggsave(file = "fig5.png", plot = fig5, units = "in", width = 11.69, height = 8.27)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ggsave(file = "fig5.pdf", plot = fig5, units = "in", width = 11.69, height = 8.27)
