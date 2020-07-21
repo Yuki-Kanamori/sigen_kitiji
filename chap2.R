@@ -720,6 +720,9 @@ for(i in (min(abund_oct_sel$year)+1):(max(abund_oct_sel$year)+1)){
 ### figures (fig10, fig11)
 ### year trend of stock biomass
 trend = est %>% select(year, biomass) %>% na.omit() %>% dplyr::group_by(year) %>% dplyr::summarize(total = sum(biomass))
+low = (max(trend$total)-min(trend$total))*1/3+min(trend$total)
+high = max(trend$total)-(max(trend$total)-min(trend$total))*1/3
+
 g = ggplot(trend, aes(x = year, y = total/1000))
 p = geom_point(shape = 20, size = 4)
 l = geom_line(size = 0.6, linetype = "solid")
@@ -732,8 +735,10 @@ th = theme(panel.grid.major = element_blank(),
            axis.title.y = element_text(size = rel(1.5)),
            legend.title = element_text(size = 13),
            strip.text.x = element_text(size = rel(1.5)))
-fig10 = g+p+l+lab+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1996, 2020, by = 1))
-ggsave()
+level_l = geom_hline(yintercept = low/1000, linetype = "dashed", color = "gray50")
+level_h = geom_hline(yintercept = high/1000, linetype = "dashed", color = "gray50")
+fig10 = g+p+l+lab+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1996, 2020, by = 1))+level_l+level_h
+ggsave(file = "fig10.png", plot = fig10, units = "in", width = 11.69, height = 8.27)
 
 
 
