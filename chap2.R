@@ -299,7 +299,6 @@ unique(catch$method)
 levels(catch$method) 
 catch$method = factor(catch$method, levels = c("沖底・小底以外", "小底", "沖底"))
 
-require(ggplot2)
 g = ggplot(catch, aes(x = year, y = catch_t, fill = method))
 b = geom_bar(stat = "identity", width = 0.5, colour = "black")
 lab = labs(x = "年", y = "漁獲量 (トン)", fill = "漁業種")
@@ -675,13 +674,34 @@ for(i in (min(abund_oct_sel$year)+1):max(abund_oct_sel$year)){
 }
 
 
+### figures (fig10, fig11)
+### year trend of stock biomass
+trend = est %>% select(year, biomass) %>% na.omit() %>% dplyr::group_by(year) %>% dplyr::summarize(total = sum(biomass))
+g = ggplot(trend, aes(x = year, y = total/1000))
+p = geom_point(shape = 20, size = 4)
+l = geom_line(size = 0.6, linetype = "solid")
+lab = labs(x = "年", y = "資源量（千トン）", shape = "")
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_text(size = 13),
+           strip.text.x = element_text(size = rel(1.5)))
+fig10 = g+p+l+lab+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1996, 2020, by = 1), limits=c(1996, 2020))
+ggsave()
 
-
-
-
-
-
-
+est = est %>% mutate(age2 = ifelse(age < 5, "2-4歳", "5歳以上"))
+levels(est$age2) 
+est$age2 = factor(est$age2, levels = c("2-4歳", "5歳以上"))
+g = ggplot(catch, aes(x = year, y = number/1000000, fill = age2))
+b = geom_bar(stat = "identity", width = 0.5, colour = "black")
+lab = labs(x = "年", y = "資源尾数（百万尾）")
+col_age = c("black", "white")
+c = scale_fill_manual(values = col_age)
+fig11 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1996, 2020, by = 1), limits=c(1996, 2019))
+ggsave(file = "fig5.png", plot = fig5, units = "in", width = 11.69, height = 8.27)
 
 
 
