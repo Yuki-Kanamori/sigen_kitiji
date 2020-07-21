@@ -32,6 +32,7 @@ require(plyr)
 require(ggplot2)
 require(investr)
 require(stringr)
+require(abind)
 
 # please change here -----------------------------------------------------------
 # set working directory
@@ -435,26 +436,62 @@ ggsave(file = "fig8.png", plot = fig8, units = "in", width = 11.69, height = 8.2
 
 
 
-# stock abundance ---------------------------------------------------------
+# stock abundance (number & biomass) ---------------------------------------------------------
+olddata = read.csv("olddata_trawl_length.csv") 
+old_trawl = olddata %>% filter(data == 'trawl') %>% gather(key = year_tag, value = number, 2:(ncol(olddata)-1)) %>% mutate(year = as.numeric(str_sub(year_tag, 2, 5))) %>% select(-year_tag, -data)
+old_length = olddata %>% filter(data == 'length') %>% gather(key = year_tag, value = mean_mm, 2:(ncol(olddata)-1)) %>% mutate(year = as.numeric(str_sub(year_tag, 2, 5))) %>% select(-year_tag, -data)
+summary(old_trawl)
+
 naa = read.csv("number_at_age.csv")
 naa = naa[1:(nrow(naa)-1), 3:ncol(naa)]
 naa = apply(naa, 1, sum)
-naa = naa %>% data.frame() %>% mutate(age = 0:10)
-colnames(naa) = c('catch', 'age')
+naa = naa %>% data.frame() %>% mutate(age = 0:10) %>% filter(age != 0)
+colnames(naa) = c('number', 'age')
+naa$year = 2019
 
-naa = naa %>% mutate(sel03 = naa$catch/0.3, catch_pre = c(0, 87995, 131464, 343926, 699914, 1134037, 1515615, 1690661, 1741119, 2661833, 41257681)) %>% mutate(sel03_pre = catch_pre/0.3)
+trawl = rbind(old_trawl, naa)
 
-### survival
-naa$sur = NA
-for(i in 1:nrow(naa)){
-  if(i < (nrow(naa)-1)){
-    # naa[i, "sur"] = naa[(i+1), naa$sel03]/naa[i, naa$sel03_pre]
-    naa[i, "sur"] = naa$sel03[(i+1)]/naa$sel03_pre[i]
-  }else{
-    naa[i, "sur"] = naa$sel03[(i+1)]/(naa$sel03_pre[i]+naa$sel03_pre[i+1])
+length = mean_length_weight_at_age %>% select(age, mean_mm) %>% mutate(age = as.numeric(age), year = 2019)
+length = rbind(old_length, length)
+
+### survival rate at age
+survival = NULL
+for(i in min(trawl$year):(max(trawl$year)-1)){
+  data_lastyr = trawl %>% filter(year == i)
+  data_thisyr = trawl %>% filter(year == (i+1))
+  data = left_join(data_lastyr, data_thisyr, by = 'age')
+  surv = matrix(NA, ncol = 1, nrow = 9)
+  
+  for(j in 2:10){
+    if(j < 10){
+      surv[(j-1), 1] = data$number.y[(j)]/data$number.x[(j-1)]
+    }else{
+      surv[(j-1), 1] = data$number.y[(j)]/(data$number.x[j]+data$number.x[j-1])
+    }
   }
+  survival = rbind(survival, surv)
 }
-summary(naa)
+survival = data.frame(surv = survival, year = rep(1996:2019, each = 9), age = rep(2:10))
+
+# naa = read.csv("number_at_age.csv")
+# naa = naa[1:(nrow(naa)-1), 3:ncol(naa)]
+# naa = apply(naa, 1, sum)
+# naa = naa %>% data.frame() %>% mutate(age = 0:10)
+# colnames(naa) = c('catch', 'age')
+# 
+# naa = naa %>% mutate(sel03 = naa$catch/0.3, catch_pre = c(0, 87995, 131464, 343926, 699914, 1134037, 1515615, 1690661, 1741119, 2661833, 41257681)) %>% mutate(sel03_pre = catch_pre/0.3)
+# 
+# ### survival
+# naa$sur = NA
+# for(i in 1:nrow(naa)){
+#   if(i < (nrow(naa)-1)){
+#     # naa[i, "sur"] = naa[(i+1), naa$sel03]/naa[i, naa$sel03_pre]
+#     naa[i, "sur"] = naa$sel03[(i+1)]/naa$sel03_pre[i]
+#   }else{
+#     naa[i, "sur"] = naa$sel03[(i+1)]/(naa$sel03_pre[i]+naa$sel03_pre[i+1])
+#   }
+# }
+# summary(naa)
 
 # logis = data.frame(length_mm = seq(15, 315, 10)) %>% mutate(selectivity = 0.738/(1+1525*exp(-0.0824*length_mm)))
 # param = nls(selectivity ~ a/(1+b*exp(c*length_mm)), data = logis, start = c(a = 1, b = 0.1, c = 0.1))
@@ -487,11 +524,12 @@ terminal_F = -log(1-(fishing_rate/exp(-M/2)))
 Z = terminal_F + M
 surv_2month = exp(-Z/6)
 
-naa$number_j = NA
+naa$number_2019j = NA
 for(i in 1:nrow(naa)){
-  naa[i, "number_j"] = surv_2month*(naa$catch_pre[i]/naa$selectivity[i])
+  naa[i, "number_2019j"] = surv_2month*(naa$catch_pre[i]/naa$selectivity[i])
 }
 # naa$catch_pre/naa$selectivity
 
-naa$biomass_j = naa$number_j*naa$weight*(0.001)^2
-
+naa$biomass_2019j = naa$number_2019j*naa$weight*(0.001)^2
+naa$number_2020j = (naa$catch_pre[i]/naa$selectivity[i])*surv_2month
+naa$biomass_j_next = (naa$catch_pre[i]/naa$selectivity[i])*surv_2month
