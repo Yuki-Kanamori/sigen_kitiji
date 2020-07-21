@@ -441,6 +441,7 @@ olddata = read.csv("olddata_trawl_length.csv")
 old_trawl = olddata %>% filter(data == 'trawl') %>% gather(key = year_tag, value = number, 2:(ncol(olddata)-1)) %>% mutate(year = as.numeric(str_sub(year_tag, 2, 5))) %>% select(-year_tag, -data)
 old_length = olddata %>% filter(data == 'length') %>% gather(key = year_tag, value = mean_mm, 2:(ncol(olddata)-1)) %>% mutate(year = as.numeric(str_sub(year_tag, 2, 5))) %>% select(-year_tag, -data)
 summary(old_trawl)
+old_catchF = olddata %>% filter(data == 'catch_fisheries') %>% gather(key = year_tag, value = catch, 2:(ncol(olddata)-1)) %>% mutate(year = as.numeric(str_sub(year_tag, 2, 5))) %>% select(-year_tag, -data, -age)
 
 naa = read.csv("number_at_age.csv")
 naa = naa[1:(nrow(naa)-1), 3:ncol(naa)]
@@ -454,6 +455,10 @@ trawl = rbind(old_trawl, naa)
 length = mean_length_weight_at_age %>% select(age, mean_mm) %>% mutate(age = as.numeric(age), year = 2019) %>% filter(age > 1)
 length = rbind(old_length, length)
 summary(length)
+
+catch2019 = data.frame(catch = sum(okisoko$漁獲量の合計)/1000, year = 2019)
+catchF = rbind(old_catchF, catch2019)
+summary(catchF)
 
 ### survival rate at age
 survival = NULL
@@ -593,6 +598,8 @@ for(i in min(trawl$year):max(trawl$year)){
   temp_abund_oct = data.frame(number_sel = temp_naa_sel[, 1], biomass_sel = temp_baa_sel[, 1], year = mean(data$year), age = 2:10)
   abund_oct = rbind(abund_oct, temp_abund_oct)
 }
+
+
 
 
 ### number in January
