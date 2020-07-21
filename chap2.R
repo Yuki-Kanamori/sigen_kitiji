@@ -21,6 +21,7 @@
 # 
 # 
 # 2-4  資源量計算とABCの算定
+#      (引き継ぎ資料の2-4部分)
 
 
 # load the packages -------------------------------------------------------
@@ -37,10 +38,6 @@ require(abind)
 # please change here -----------------------------------------------------------
 # set working directory
 setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/SA2020")
-
-# how many years ago
-# e.g. wanna analyze the data of 2018 and now is 2020, then n = 2
-# n = 2
 
 
 # 2-1 estimate the number at age ------------------------------------------
