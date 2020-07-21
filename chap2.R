@@ -652,25 +652,68 @@ for(i in (min(abund_oct_sel$year)+1):max(abund_oct_sel$year)){
 
 ### abundance in January
 est = NULL
-for(i in (min(abund_oct_sel$year)+1):max(abund_oct_sel$year)){
-  # i = min(abund_oct_sel$year)+1
-  data_survival = survival_2month %>% filter(year == i)
-  data_abund_oct_sel = abund_oct_sel %>% filter(year == (i-1)) %>% arrange(age)
-  data_weight = weight %>% filter(year == (i-1)) %>% arrange(age)
+for(i in (min(abund_oct_sel$year)+1):(max(abund_oct_sel$year)+1)){
+  # i = max(abund_oct_sel$year) #1995
   
-  temp_number = matrix(NA, ncol = 1, nrow = nrow(data_abund_oct_sel))
-  temp_biomass = matrix(NA, ncol = 1, nrow = nrow(data_abund_oct_sel))
-  
-  for(j in 1:nrow(data_abund_oct_sel)){
-    temp_number[j, 1] = data_survival$surv*data_abund_oct_sel$number_sel[j]
+  if(i < max(abund_oct_sel$year)+1){
+    data_survival = survival_2month %>% filter(year == i)
+    data_abund_oct_sel = abund_oct_sel %>% filter(year == (i-1)) %>% arrange(age)
+    data_weight = weight %>% filter(year == (i-1)) %>% arrange(age)
+    
+    temp_number = matrix(NA, ncol = 1, nrow = nrow(data_abund_oct_sel))
+    temp_biomass = matrix(NA, ncol = 1, nrow = nrow(data_abund_oct_sel))
+    
+    for(j in 1:nrow(data_abund_oct_sel)){
+      temp_number[j, 1] = data_survival$surv*data_abund_oct_sel$number_sel[j]
+    }
+    
+    for(k in 1:nrow(data_abund_oct_sel)){
+      temp_biomass[k, 1] = temp_number[k, 1]*data_weight$weight[k]*(0.001)^2
+    }
+    
+    temp_est = data.frame(number = temp_number[, 1], biomass = temp_biomass[, 1], year = i, age = 2:10)
+    est = rbind(est, temp_est)
   }
   
-  for(k in 1:nrow(data_abund_oct_sel)){
-    temp_biomass[k, 1] = temp_number[k, 1]*data_weight$weight[k]*(0.001)^2
+  if(i == max(abund_oct_sel$year)+1){
+    data_survival = survival_2month %>% filter(year == (i-1))
+    data_abund_oct_sel = abund_oct_sel %>% filter(year == (i-1)) %>% arrange(age)
+    data_weight = weight %>% filter(year == (i-1)) %>% arrange(age)
+    
+    temp_number = matrix(NA, ncol = 1, nrow = nrow(data_abund_oct_sel))
+    temp_biomass = matrix(NA, ncol = 1, nrow = nrow(data_abund_oct_sel))
+    
+    for(j in 1:nrow(data_abund_oct_sel)){
+      temp_number[j, 1] = data_survival$surv*data_abund_oct_sel$number_sel[j]
+    }
+    
+    for(k in 1:nrow(data_abund_oct_sel)){
+      temp_biomass[k, 1] = temp_number[k, 1]*data_weight$weight[k]*(0.001)^2
+    }
+    
+    #temp_est_latest = data.frame(number = temp_number[, 1], biomass = temp_biomass[, 1], year = i, age = 2:10)
+    temp_est = data.frame(number = temp_number[, 1], biomass = temp_biomass[, 1], year = i, age = 2:10)
+    est = rbind(est, temp_est)
   }
+  # data_survival = survival_2month %>% filter(year == i)
+  # data_abund_oct_sel = abund_oct_sel %>% filter(year == (i-1)) %>% arrange(age)
+  # data_weight = weight %>% filter(year == (i-1)) %>% arrange(age)
+  # 
+  # temp_number = matrix(NA, ncol = 1, nrow = nrow(data_abund_oct_sel))
+  # temp_biomass = matrix(NA, ncol = 1, nrow = nrow(data_abund_oct_sel))
+  # 
+  # for(j in 1:nrow(data_abund_oct_sel)){
+  #   temp_number[j, 1] = data_survival$surv*data_abund_oct_sel$number_sel[j]
+  # }
+  # 
+  # for(k in 1:nrow(data_abund_oct_sel)){
+  #   temp_biomass[k, 1] = temp_number[k, 1]*data_weight$weight[k]*(0.001)^2
+  # }
   
-  temp_est = data.frame(number = temp_number[, 1], biomass = temp_biomass[, 1], year = i, age = 2:10)
-  est = rbind(est, temp_est)
+  # temp_est = data.frame(number = temp_number[, 1], biomass = temp_biomass[, 1], year = (i+1), age = 2:10)
+  # est = rbind(est, temp_est)
+  
+  #est = rbind(temp_est, temp_est_latest)
 }
 
 
@@ -692,15 +735,30 @@ th = theme(panel.grid.major = element_blank(),
 fig10 = g+p+l+lab+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1996, 2020, by = 1), limits=c(1996, 2020))
 ggsave()
 
-est = est %>% mutate(age2 = ifelse(age < 5, "2-4歳", "5歳以上"))
-levels(est$age2) 
-est$age2 = factor(est$age2, levels = c("2-4歳", "5歳以上"))
-g = ggplot(catch, aes(x = year, y = number/1000000, fill = age2))
+
+
+est = est %>% mutate(age2 = ifelse(age > 4, "5歳以上", "2-4歳"))
+summary(est)
+
+est2 = est %>% dplyr::group_by(age2, year) %>% dplyr::summarize(total = sum(number))
+est2[is.na(est2)] = 0
+levels(est2$age2) 
+est2$age3 = factor(est2$age2, levels = c("5歳", "2-4歳以上"))
+summary(est2)
+g = ggplot(est2, aes(x = year, y = total/1000000, fill = age2))
 b = geom_bar(stat = "identity", width = 0.5, colour = "black")
 lab = labs(x = "年", y = "資源尾数（百万尾）")
 col_age = c("black", "white")
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_text(size = 13),
+           strip.text.x = element_text(size = rel(1.5)))
 c = scale_fill_manual(values = col_age)
-fig11 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1996, 2020, by = 1), limits=c(1996, 2019))
+fig11 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2020, by = 1), limits=c(1996, 2019))
 ggsave(file = "fig5.png", plot = fig5, units = "in", width = 11.69, height = 8.27)
 
 
