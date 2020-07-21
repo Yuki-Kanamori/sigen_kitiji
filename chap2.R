@@ -1,28 +1,40 @@
 
 # SUMMARY -----------------------------------------------------------------
+# 2-0  パッケージの読み込みとディレクトリの設定 
+# 
+# 
 # 2-1  成長曲線の作成，ALKの作成，および年齢別資源微数の算出 
 #      (引き継ぎ資料の2-1部分)
 # step 1 成長曲線の前処理（成長曲線に不必要な10+, 10++, and ?のデータを除去する）
 # step 2 von Bertalanffy growth curveにfittingし，パラメータ（k and t0）の推定を行う
 # step 3 ALKの作成 (number at age)    ※表がcsvで出てきます
 # step 4 ALKの作成 (age composition)  ※表がcsvで出てきます
-# step 5 年齢別資源微数の算出
+# step 5 年齢別資源尾数の算出         ※表がcsvで出てきます
 # 
 # 
 # 2-2  年齢別資源体重の算出
 #      (引き継ぎ資料の2-2部分) 
-# step 1 
+# step 1 年齢別，体調別の平均体重の算出 ※表がcsvで出てきます
 # 
 # 
 # 2-3  漁獲量まとめ
 #      (引き継ぎ資料の2-3部分)
-# step 1 魚種別集計
-# step 2 県から提出されたデータの集計
+# step 1 魚種別集計                    ※表がcsvで出てきます
+# step 2 県から提出されたデータの集計  ※表がcsvで出てきます
 # 
 # 
 # 2-4  資源量計算とABCの算定
 #      (引き継ぎ資料の2-4部分)
+# step 1 漁獲量のトレンド   ※fig. 5
+# step 2 努力量のトレンド   ※fig. 6
+# step 3 CPUEのトレンド     ※fig. 8
+# step 4 資源量推定         ※figs. 10 and 11
 
+
+
+# -------------------------------------------------------------------------
+# 2-0  パッケージの読み込みとディレクトリの設定 
+# -------------------------------------------------------------------------
 
 # load the packages -------------------------------------------------------
 require(xlsx)
@@ -35,35 +47,26 @@ require(investr)
 require(stringr)
 require(abind)
 
-# please change here -----------------------------------------------------------
-# set working directory
+# set working directory -----------------------------------------------------------
+# please change here
 setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/SA2020")
 
 
-# 2-1 estimate the number at age ------------------------------------------
-# 2-1.1 make the age-length key -------------------------------------------
-
-# load the data
-# year = as.numeric(str_sub(Sys.Date(), 1, 4))-n
-# filename = paste0("1_", year, "年キチジ年齢分解.xlsx")
-# df = read.xlsx(filename, 1)
-# df = df[, c(1,3)]
-# colnames(df) = c("length_cm", "age")
-# summary(df)
+# -------------------------------------------------------------------------
+# 2-1  成長曲線の作成，ALKの作成，および年齢別資源微数の算出 
+#      (引き継ぎ資料の2-1部分)
+# -------------------------------------------------------------------------
 df = read.csv("ALdata.csv") %>% filter(pick == "TRUE") %>% select(label, SL, age)
 summary(df)
 mode(df$age)
-# make dataframe with length at age and number at age (not necessary for stock assessment)
 
-
-
-# 2-1.1.1 remove the data that age is 10+, 10++, and ? --------------------
+# step 1; remove the data that age is 10+, 10++, and ? --------------------
 df = df %>% mutate(length_mm = SL, age_num = as.numeric(as.character(age))) #10+, 10++, and ? turned NA
 summary(df)
 df2 = na.omit(df)
 summary(df2)
 
-# 2-1.1.2 fit the von Bertalanffy growth curve and estimate params --------
+# step 2; fit the von Bertalanffy growth curve and estimate params --------
 # Lt = L_max*(1-e^(-K(t-t0)))
 mode(df2$age_num)
 mode(df2$length_mm)
@@ -76,14 +79,13 @@ summary(fit)
 plotFit(fit, interval = "prediction", ylim = c(0, 250), pch = 19, col.pred = 'light blue', shade=T)
 
 
-# 2-1.3.1 make the tables of number at age
-# use 10+ and 10++
+# step 3; make the tables of number at age (NAA)
+# !!note!!  use 10+ and 10++
 head(df)
 df3 = df %>% select(length_mm, age)
 summary(df3)
 head(df3)
 df3 = df3 %>% mutate(fumei = ifelse(df3$age == "?", 100, as.character(df3$age)))
-
 
 df3 = df3 %>% mutate(fumei = ifelse(df3$age == "?", 100, as.character(df3$age)),
                      age2 = ifelse(df3$age == "10+", 10, ifelse(df3$age == "10++", 10, as.character(df3$age)))) %>% filter(fumei != 100) %>% select(-fumei) %>% mutate(count = 1)
@@ -123,7 +125,7 @@ sum2 = sum %>% tidyr::spread(key = length_cate, value = sum) %>% mutate(age = "t
 number_at_age = rbind(NAA2, sum2)
 write.csv(number_at_age, "number_at_age_freq.csv", fileEncoding = "CP932")
 
-# 2-1.3.2 make the tables of age composition (AC)
+# step 4; make the tables of age composition (AC)
 AC = left_join(NAA, sum, by = "length_cate") %>% mutate(freq = ifelse(sum > 0, number/sum, 0))
 AC = AC %>% select(length_cate, age, freq)
 a_sum = ddply(AC, .(length_cate), summarize, sum = sum(freq))
@@ -134,7 +136,7 @@ age_composition = rbind(age_composition, a_sum2)
 write.csv(age_composition, "age_composition.csv", fileEncoding = "CP932")
 
 
-# step 5 年齢別資源尾数の算出 ---------------------------------------------
+# step 5; calculate the number at age ---------------------------------------------
 # get survey data and make dataframe
 setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/SA2020")
 len_num = read.csv("survey_N_at_length.csv", fileEncoding = "CP932")
@@ -160,7 +162,14 @@ write.csv(number_at_age2, "number_at_age.csv")
 
 
 
-# 2-2 -----------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# 2-2  年齢別資源体重の算出
+#      (引き継ぎ資料の2-2部分) 
+# -------------------------------------------------------------------------
+
+# step 1; calculate the weight at age, or at length -----------------------
 number_at_age3 = number_at_age2[-nrow(number_at_age2), ] %>% gather(key = length, value = number, 2:ncol(number_at_age2))
 number_at_age3 = number_at_age2 %>% gather(key = length, value = number, 2:ncol(number_at_age2)) %>% filter(age != "total")
 summary(number_at_age3)
@@ -175,7 +184,12 @@ write.csv(mean_length_weight_at_age, "mean_length_weight_at_age.csv")
 
 
 
-# 2-3 -----------------------------------------------------------
+# -------------------------------------------------------------------------
+# 2-3  漁獲量まとめ
+#      (引き継ぎ資料の2-3部分)
+# -------------------------------------------------------------------------
+
+# step 1; summary ---------------------------------------------------------
 okisoko = read.csv("okisoko.csv")
 summary(okisoko$魚種名)
 colnames(okisoko)
@@ -202,8 +216,8 @@ write.csv(catch_t3, "catch_t3.csv", fileEncoding = "CP932")
 write.csv(effort_t1, "effort_t1.csv", fileEncoding = "CP932")
 
 
-### data from each prefecture
-# aomori
+# step 2; summary of the data derived from prefectures --------------------
+### aomori
 ao = read.xlsx("catch_pref.xlsx", sheet = "ao") %>% select(年, 漁法名, 漁法, 月間数量) %>% dplyr::rename(year = 年, method_name = 漁法名, method = 漁法, catch_kg = 月間数量)
 summary(ao)
 unique(ao$method)
@@ -272,9 +286,12 @@ write.csv(merge, "merge.csv")
 
 
 
-# 2-4 -----------------------------------------------------------
+# -------------------------------------------------------------------------
+# 2-4  資源量計算とABCの算定
+#      (引き継ぎ資料の2-4部分)
+# -------------------------------------------------------------------------
 
-# catch trend ---------------------------------------------------
+# step 1; catch trend -----------------------------------------------------
 catch_old = read.csv("catchdata_old.csv", fileEncoding = "CP932") %>% na.omit()
 catch_old = catch_old[, c(1, 3:5)]
 catch_old = catch_old %>% tidyr::gather(key = method, value = sum, 2:4) %>% dplyr::rename(year = 年)
@@ -306,7 +323,7 @@ ggsave(file = "fig5.png", plot = fig5, units = "in", width = 11.69, height = 8.2
 
 
 
-# effort trend --------------------------------------------------
+# step 2; effort trend ----------------------------------------------------
 eff_old = read.csv("effortdata_old.csv", fileEncoding = "CP932")
 eff_old = ddply(eff_old, .(method, year), summarize, sum = sum(effort))
 
@@ -331,7 +348,7 @@ ggsave(file = "fig6.png", plot = fig6, units = "in", width = 11.69, height = 8.2
 
 
 
-# weighted cpue ----------------------------------------------------------
+# step 3; CPUE trend ----------------------------------------------------------
 gyo_old = read.csv("gyoseki_old.csv", fileEncoding = "CP932")
 unique(gyo_old$method)
 
@@ -409,7 +426,7 @@ th = theme(panel.grid.major = element_blank(),
            strip.text.x = element_text(size = rel(1.5)))
 tra = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 3), limits=c(1972, 2019))
 
-### 重み付きCPUE
+### weighted CPUE
 w_cpue$label = "太平洋北部"
 g = ggplot(w_cpue, aes(x = year, y = weighted_cpue))
 p = geom_point(shape = 20, size = 4)
@@ -432,12 +449,10 @@ ggsave(file = "fig8.png", plot = fig8, units = "in", width = 11.69, height = 8.2
 
 
 
-# stock abundance (number & biomass) ---------------------------------------------------------
+# step 4; estimation of stock abundance (number & biomass) ---------------------------------------------------------
 olddata = read.csv("olddata_trawl_length.csv") 
+
 old_trawl = olddata %>% filter(data == 'trawl') %>% gather(key = year_tag, value = number, 2:(ncol(olddata)-1)) %>% mutate(year = as.numeric(str_sub(year_tag, 2, 5))) %>% select(-year_tag, -data)
-old_length = olddata %>% filter(data == 'length') %>% gather(key = year_tag, value = mean_mm, 2:(ncol(olddata)-1)) %>% mutate(year = as.numeric(str_sub(year_tag, 2, 5))) %>% select(-year_tag, -data)
-summary(old_trawl)
-old_catchF = olddata %>% filter(data == 'catch_fisheries') %>% gather(key = year_tag, value = catch, 2:(ncol(olddata)-1)) %>% mutate(year = as.numeric(str_sub(year_tag, 2, 5))) %>% select(-year_tag, -data, -age)
 
 naa = read.csv("number_at_age.csv")
 naa = naa[1:(nrow(naa)-1), 3:ncol(naa)]
@@ -447,6 +462,9 @@ colnames(naa) = c('number', 'age')
 naa$year = 2019
 
 trawl = rbind(old_trawl, naa)
+
+old_length = olddata %>% filter(data == 'length') %>% gather(key = year_tag, value = mean_mm, 2:(ncol(olddata)-1)) %>% mutate(year = as.numeric(str_sub(year_tag, 2, 5))) %>% select(-year_tag, -data)
+summary(old_trawl)
 
 length = mean_length_weight_at_age %>% select(age, mean_mm) %>% mutate(age = as.numeric(age), year = 2019) %>% filter(age > 1)
 length = rbind(old_length, length)
@@ -595,7 +613,7 @@ for(i in min(trawl$year):max(trawl$year)){
   abund_oct_sel = rbind(abund_oct_sel, temp_abund_oct)
 }
 
-### fishing rate, terminal F, Z, and survival rate within 2 month
+### fishing rate, F, Z, and survival rate within 2 month
 M = 2.5/20 #fixed
 abund_jan_forF_notneeded = NULL
 fishing_rate = NULL
