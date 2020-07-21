@@ -138,7 +138,6 @@ write.csv(age_composition, "age_composition.csv", fileEncoding = "CP932")
 
 # step 5; calculate the number at age ---------------------------------------------
 # get survey data and make dataframe
-setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/SA2020")
 len_num = read.csv("survey_N_at_length.csv", fileEncoding = "CP932")
 len_num = len_num[, 16:ncol(len_num)] %>% mutate(site = c("N", "S"))
 len_num = len_num %>% gather(key = age_j, value = number, 1:(ncol(len_num)-1)) %>% na.omit()
@@ -319,7 +318,7 @@ lab = labs(x = "年", y = "漁獲量 (トン)", fill = "漁業種")
 col_catch = c("grey50", "white", "grey0")
 c = scale_fill_manual(values = col_catch)
 fig5 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")
-ggsave(file = "fig5.pdf", plot = fig5, units = "in", width = 11.69, height = 8.27)
+ggsave(file = "fig5.png", plot = fig5, units = "in", width = 11.69, height = 8.27)
 
 
 
@@ -344,7 +343,7 @@ lab = labs(x = "年", y = "有漁網数 (千)", shape = "漁業種")
 # col_catch = c("grey50", "white", "grey0")
 # c = scale_fill_manual(values = col_catch)
 fig6 = g+p+l+lab+theme_bw(base_family = "HiraKakuPro-W3")
-ggsave(file = "fig6.pdf", plot = fig6, units = "in", width = 11.69, height = 8.27)
+ggsave(file = "fig6.png", plot = fig6, units = "in", width = 11.69, height = 8.27)
 
 
 
@@ -445,7 +444,7 @@ w = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position 
 
 require(gridExtra)
 fig8 = grid.arrange(kake, niso, tra, w, ncol = 1)
-ggsave(file = "fig8.pdf", plot = fig8, units = "in", width = 11.69, height = 8.27)
+ggsave(file = "fig8.png", plot = fig8, units = "in", width = 11.69, height = 8.27)
 
 
 
@@ -454,6 +453,7 @@ olddata = read.csv("olddata_trawl_length.csv")
 
 # combine the catch data from the trawl surveys
 old_trawl = olddata %>% filter(data == 'trawl') %>% gather(key = year_tag, value = number, 2:(ncol(olddata)-1)) %>% mutate(year = as.numeric(str_sub(year_tag, 2, 5))) %>% select(-year_tag, -data)
+summary(old_trawl)
 
 naa = read.csv("number_at_age.csv")
 naa = naa[1:(nrow(naa)-1), 3:ncol(naa)]
@@ -461,19 +461,21 @@ naa = apply(naa, 1, sum)
 naa = naa %>% data.frame() %>% mutate(age = 0:10) %>% filter(age != 0)
 colnames(naa) = c('number', 'age')
 naa$year = 2019
+summary(naa)
 trawl = rbind(old_trawl, naa)
+summary(trawl)
 
 # combine the length data
 old_length = olddata %>% filter(data == 'length') %>% gather(key = year_tag, value = mean_mm, 2:(ncol(olddata)-1)) %>% mutate(year = as.numeric(str_sub(year_tag, 2, 5))) %>% select(-year_tag, -data)
 summary(old_trawl)
 
-mean_length_weight_at_age = read.csv("mean_length_weight_at_age.csv")
+#mean_length_weight_at_age = read.csv("mean_length_weight_at_age.csv")
 length = mean_length_weight_at_age %>% select(age, mean_mm) %>% mutate(age = as.numeric(age), year = 2019) %>% filter(age > 1)
 length = rbind(old_length, length)
 summary(length)
 
 # combine the catch data from the fishing
-okisoko = read.csv("okisoko.csv")
+#okisoko = read.csv("okisoko.csv")
 catch2019 = data.frame(catch = sum(okisoko$漁獲量の合計)/1000, year = 2019)
 catchF = rbind(old_catchF, catch2019)
 summary(catchF)
@@ -564,7 +566,7 @@ summary(weight)
 ### number at age when selectivity changes at age
 abund_oct_sel = NULL
 for(i in min(trawl$year):max(trawl$year)){
-  #i = min(trawl$year)
+  # i = min(trawl$year)
   data_trawl = trawl %>% filter(year == i)
   data_q = q %>% filter(year == i)
   data_weight = weight %>% filter(year == i)
@@ -690,7 +692,7 @@ th = theme(panel.grid.major = element_blank(),
 level_l = geom_hline(yintercept = low/1000, linetype = "dashed", color = "gray50")
 level_h = geom_hline(yintercept = high/1000, linetype = "dashed", color = "gray50")
 fig10 = g+p+l+lab+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1996, 2020, by = 1))+level_l+level_h
-ggsave(file = "fig10.pdf", plot = fig10, units = "in", width = 11.69, height = 8.27)
+ggsave(file = "fig10.png", plot = fig10, units = "in", width = 11.69, height = 8.27)
 
 
 
@@ -723,4 +725,4 @@ th = theme(panel.grid.major = element_blank(),
            strip.text.x = element_text(size = rel(1.5)))
 c = scale_fill_manual(values = col_age)
 fig11 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2020, by = 1))
-ggsave(file = "fig5.pdf", plot = fig5, units = "in", width = 11.69, height = 8.27)
+ggsave(file = "fig11.png", plot = fig5, units = "in", width = 11.69, height = 8.27)
