@@ -591,15 +591,15 @@ for(i in min(trawl$year):max(trawl$year)){
     temp_naa_sel[j, 1] = data$number[j]/data$q[j]
   }
   
-  for(j in 1:9){
-    temp_baa_sel[j, 1] = temp_naa_sel[j, 1]*data$weight[j]*(0.001)^2
+  for(k in 1:9){
+    temp_baa_sel[k, 1] = temp_naa_sel[k, 1]*data$weight[k]*(0.001)^2
   }
 
   temp_abund_oct = data.frame(number_sel = temp_naa_sel[, 1], biomass_sel = temp_baa_sel[, 1], year = mean(data$year), age = 2:10)
   abund_oct_sel = rbind(abund_oct_sel, temp_abund_oct)
 }
 
-### terminal F and Z
+### fishing rate, terminal F, Z, and survival rate within 2 month
 M = 2.5/20 #fixed
 abund_jan_forF_notneeded = NULL
 fishing_rate = NULL
@@ -649,3 +649,50 @@ for(i in 1:nrow(naa)){
 naa$biomass_2019j = naa$number_2019j*naa$weight*(0.001)^2
 naa$number_2020j = (naa$catch_pre[i]/naa$selectivity[i])*surv_2month
 naa$biomass_j_next = (naa$catch_pre[i]/naa$selectivity[i])*surv_2month
+
+
+### abundance in January
+est = NULL
+for(i in (min(abund_oct_sel$year)+1):max(abund_oct_sel$year)){
+  # i = min(abund_oct_sel$year)+1
+  data_survival = survival_2month %>% filter(year == i)
+  data_abund_oct_sel = abund_oct_sel %>% filter(year == (i-1)) %>% arrange(age)
+  data_weight = weight %>% filter(year == (i-1)) %>% arrange(age)
+  
+  temp_number = matrix(NA, ncol = 1, nrow = nrow(data_abund_oct_sel))
+  temp_biomass = matrix(NA, ncol = 1, nrow = nrow(data_abund_oct_sel))
+  
+  for(j in 1:nrow(data_abund_oct_sel)){
+    temp_number[j, 1] = data_survival$surv*data_abund_oct_sel$number_sel[j]
+  }
+  
+  for(k in 1:nrow(data_abund_oct_sel)){
+    temp_biomass[k, 1] = temp_number[k, 1]*data_weight$weight[k]*(0.001)^2
+  }
+  
+  temp_est = data.frame(number = temp_number[, 1], biomass = temp_biomass[, 1], year = i, age = 2:10)
+  est = rbind(est, temp_est)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
