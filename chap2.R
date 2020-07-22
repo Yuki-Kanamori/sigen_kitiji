@@ -328,7 +328,7 @@ th = theme(panel.grid.major = element_blank(),
            strip.text.x = element_text(size = rel(1.5)),
            legend.position = c(0.85, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
-fig5 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0), breaks=seq(1975, 2019, by = 1))+scale_y_continuous(expand = c(0,0),limits = c(0, 4000))
+fig5 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0), breaks=seq(1975, 2019, by = 2))+scale_y_continuous(expand = c(0,0),limits = c(0, 4000))
 ggsave(file = "fig5.png", plot = fig5, units = "in", width = 11.69, height = 8.27)
 
 
@@ -400,10 +400,10 @@ cpue2$label = factor(cpue2$label, levels = c("尻屋崎〜岩手沖のかけ廻�
 
 
 ### かけ廻し
-g = ggplot(cpue2 %>% filter(method == "かけ廻し"), aes(x = year, y = cpue, shape = label))
-p = geom_point(shape = 15, size = 3)
+g = ggplot(cpue2 %>% filter(method == "かけ廻し"), aes(x = year, y = cpue, shape = label, fill = label))
+p = geom_point(shape = 22, size = 3, fill = "white")
 l = geom_line(linetype = "dotted", size = 1)
-lab = labs(x = "年", y = "CPUE", shape = "")
+lab = labs(x = "年", y = "CPUE  (kg/網)", shape = "")
 f = facet_wrap(~ label, ncol = 1)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
@@ -413,13 +413,13 @@ th = theme(panel.grid.major = element_blank(),
            axis.title.y = element_text(size = rel(1.5)),
            legend.title = element_text(size = 13),
            strip.text.x = element_text(size = rel(1.5)))
-kake = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 3), limits=c(1972, 2019))
+kake = g+l+p+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 2), expand=c(0, 0.5))+scale_y_continuous(limits = c(0, 60))
 
 ### 2そう
 g = ggplot(cpue2 %>% filter(method == "2そう曳き"), aes(x = year, y = cpue, shape = label))
 p = geom_point(shape = 17, size = 3)
 l = geom_line(linetype = "solid", size = 1)
-lab = labs(x = "年", y = "CPUE", shape = "")
+lab = labs(x = "年", y = "CPUE  (kg/網)", shape = "")
 f = facet_wrap(~ label, ncol = 1)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
@@ -429,13 +429,13 @@ th = theme(panel.grid.major = element_blank(),
            axis.title.y = element_text(size = rel(1.5)),
            legend.title = element_text(size = 13),
            strip.text.x = element_text(size = rel(1.5)))
-niso = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 3), limits=c(1972, 2019))
+niso = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 2), expand = c(0, 0.5))+scale_y_continuous(limits = c(0, 300))
 
 ### トロール
 g = ggplot(cpue2 %>% filter(method == "トロール"), aes(x = year, y = cpue, shape = label))
 p = geom_point(shape = 18, size = 4)
 l = geom_line(linetype = "dotted", size = 1)
-lab = labs(x = "年", y = "CPUE", shape = "")
+lab = labs(x = "年", y = "CPUE  (kg/網)", shape = "")
 f = facet_wrap(~ label, ncol = 1)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
@@ -445,7 +445,7 @@ th = theme(panel.grid.major = element_blank(),
            axis.title.y = element_text(size = rel(1.5)),
            legend.title = element_text(size = 13),
            strip.text.x = element_text(size = rel(1.5)))
-tra = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 3), limits=c(1972, 2019))
+tra = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 2), expand=c(0, 0.5))+scale_y_continuous(limits = c(0, 120))
 
 ### weighted CPUE
 w_cpue$label = "太平洋北部"
@@ -462,7 +462,7 @@ th = theme(panel.grid.major = element_blank(),
            axis.title.y = element_text(size = rel(1.5)),
            legend.title = element_text(size = 13),
            strip.text.x = element_text(size = rel(1.5)))
-w = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 3), limits=c(1972, 2019))
+w = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 2), expand=c(0, 0.5))+scale_y_continuous(limits = c(0, 3))
 
 require(gridExtra)
 fig8 = grid.arrange(kake, niso, tra, w, ncol = 1)
