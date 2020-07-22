@@ -347,13 +347,22 @@ unique(eff$label)
 levels(eff$label)
 eff$label = factor(eff$label, levels = c("尻屋崎〜岩手沖のかけ廻し", "岩手沖の2そう曳き", "金華山~房総のトロール"))
 
-g = ggplot(eff, aes(x = year, y = sum/1000, shape = label))
-p = geom_point()
-l = geom_line()
+g = ggplot(eff, aes(x = year, y = sum/1000, shape = label, linetype = label))
+p = geom_point(size = 3)
+l = geom_line(size = 1)
 lab = labs(x = "年", y = "有漁網数 (千)", shape = "漁業種")
-# col_catch = c("grey50", "white", "grey0")
-# c = scale_fill_manual(values = col_catch)
-fig6 = g+p+l+lab+theme_bw(base_family = "HiraKakuPro-W3")
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_blank(),
+           legend.text = element_text(size = rel(1.2)),
+           strip.text.x = element_text(size = rel(1.5)),
+           legend.position = c(0.8, 0.8),
+           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+fig6 = g+p+l+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0, 0.5), breaks=seq(1972, 2019, by = 2))+scale_y_continuous(expand = c(0,0),limits = c(0, 30))+scale_shape_manual(values = c(22, 17, 18))+scale_linetype_manual(values = c("solid", "solid", "dotted"))
 ggsave(file = "fig6.png", plot = fig6, units = "in", width = 11.69, height = 8.27)
 
 
