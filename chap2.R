@@ -881,4 +881,9 @@ ggsave(file = "fig_a33.png", plot = fig_a33, units = "in", width = 11.69, height
 
 # step 6; get ABC ----------------------------------------------------------
 f_current = fishing_rate %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-1)-3)) %>% summarize(mean(f))
+s_pre = Z %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1))
+s_current = exp(-s_pre$z)
+
+s1_pre = survival %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-1)-3), age == 2)
+s1_current = mean(s1_pre$surv)
 
