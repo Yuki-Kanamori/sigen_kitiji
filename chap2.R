@@ -801,7 +801,20 @@ ggsave(file = "fig12.png", plot = fig12, units = "in", width = 11.69, height = 8
 
 
 
-
-
-
+# add second axis
+# g = ggplot(fishing_trend %>% na.omit(), aes(x = year, y = value, shape = data2, group = data2))
+# p = geom_point(size = 3)
+# l = geom_line(size = 1)
+# lab = labs(x = "年", y = "F値")
+# th = theme(panel.grid.major = element_blank(),
+#            panel.grid.minor = element_blank(),
+#            axis.text.x = element_text(size = rel(1.2), angle = 90),
+#            axis.text.y = element_text(size = rel(1.5)),
+#            axis.title.x = element_text(size = rel(1.5)),
+#            axis.title.y = element_text(size = rel(1.5)),
+#            legend.title = element_blank(),
+#            strip.text.x = element_text(size = rel(1.5)),
+#            legend.position = c(0.1, 0.8),
+#            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+# g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2020, by = 2), expand = c(0, 0.5))+scale_y_continuous(limits = c(0, 0.5), sec.axis = sec_axis(~ .*100/2, name = "漁獲割合（%）"))
 
