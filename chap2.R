@@ -30,6 +30,7 @@
 # step 3 CPUEのトレンド     ※fig. 8
 # step 4 資源量推定         ※figs. 10, 11, and 12
 # step 5 資源量推定(南北別) ※fig. A3-3
+# step 6 ABC算定
 
 
 # -------------------------------------------------------------------------
@@ -618,7 +619,7 @@ for(i in min(trawl$year):max(trawl$year)){
 M = 2.5/20 #fixed
 abund_jan_forF_notneeded = NULL
 fishing_rate = NULL
-Z_notneeded = NULL
+Z = NULL
 survival_2month = NULL
 
 for(i in (min(abund_oct_sel$year)+1):max(abund_oct_sel$year)){
@@ -635,12 +636,12 @@ for(i in (min(abund_oct_sel$year)+1):max(abund_oct_sel$year)){
   
   abund_jan_forF_notneeded_pre = data.frame(biomass = temp_abund_jan, year = i)
   fishing_rate_pre = data.frame(f = temp_f, year = i)
-  Z_notneeded_pre = data.frame(z = temp_Z, year = i)
+  Z_pre = data.frame(z = temp_Z, year = i)
   survival_2month_pre = data.frame(surv = temp_survival_2month, year = i)
 
   abund_jan_forF_notneeded = rbind(abund_jan_forF_notneeded, abund_jan_forF_notneeded_pre)
   fishing_rate = rbind(fishing_rate, fishing_rate_pre)
-  Z_notneeded = rbind(Z_notneeded, Z_notneeded_pre)
+  Z = rbind(Z, Z_pre)
   survival_2month = rbind(survival_2month, survival_2month_pre)
 }
 
@@ -875,3 +876,9 @@ th = theme(panel.grid.major = element_blank(),
 c = scale_fill_manual(values =  c("white", "black"))
 fig_a33 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2019, by = 2), expand= c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 15))
 ggsave(file = "fig_a33.png", plot = fig_a33, units = "in", width = 11.69, height = 8.27)
+
+
+
+# step 6; get ABC ----------------------------------------------------------
+f_current = fishing_rate %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-1)-3)) %>% summarize(mean(f))
+
