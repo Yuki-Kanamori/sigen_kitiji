@@ -751,6 +751,7 @@ th = theme(panel.grid.major = element_blank(),
            axis.title.x = element_text(size = rel(1.5)),
            axis.title.y = element_text(size = rel(1.5)),
            legend.title = element_blank(),
+           legend.text = element_text(size = rel(1.2)),
            strip.text.x = element_text(size = rel(1.5)),
            legend.position = c(0.1, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
