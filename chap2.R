@@ -755,8 +755,8 @@ th = theme(panel.grid.major = element_blank(),
            legend.position = c(0.1, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
 c = scale_fill_manual(values =  c("black", "white"))
-fig11 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2020, by = 1))
-ggsave(file = "fig11.png", plot = fig5, units = "in", width = 11.69, height = 8.27)
+fig11 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2020, by = 2), expand = c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 150))
+ggsave(file = "fig11.png", plot = fig11, units = "in", width = 11.69, height = 8.27)
 
 
 
