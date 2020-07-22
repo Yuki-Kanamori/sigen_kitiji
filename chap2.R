@@ -28,7 +28,7 @@
 # step 1 漁獲量のトレンド   ※fig. 5
 # step 2 努力量のトレンド   ※fig. 6
 # step 3 CPUEのトレンド     ※fig. 8
-# step 4 資源量推定         ※figs. 10 and 11
+# step 4 資源量推定         ※figs. 10, 11, and 12
 
 
 
@@ -46,6 +46,7 @@ require(ggplot2)
 require(investr)
 require(stringr)
 require(abind)
+require(gridExtra)
 
 # set working directory -----------------------------------------------------------
 # please change here
@@ -464,7 +465,6 @@ th = theme(panel.grid.major = element_blank(),
            strip.text.x = element_text(size = rel(1.5)))
 w = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 2), expand=c(0, 0.5))+scale_y_continuous(limits = c(0, 3))
 
-require(gridExtra)
 fig8 = grid.arrange(kake, niso, tra, w, ncol = 1)
 ggsave(file = "fig8.png", plot = fig8, units = "in", width = 11.69, height = 8.27)
 
@@ -694,8 +694,15 @@ for(i in (min(abund_oct_sel$year)+1):(max(abund_oct_sel$year)+1)){
 
 
 
+### catch rate
+trend = est %>% select(year, biomass) %>% na.omit() %>% dplyr::group_by(year) %>% dplyr::summarize(total = sum(biomass))
+catch_rate = left_join(catchF, trend, by = "year") %>% mutate(rate = catch/total*100)
+fishing_trend = left_join(catch_rate, fishing_rate, by = "year") %>% select(year, rate, f) %>% gather(key = data, value = value, 2:3) %>% mutate(data2 = ifelse(data == "f", "F値", "漁獲割合"))
+
+
+
 ### figures 
-### year trend of stock biomass
+### year trend of stock biomass (fig. 12)
 trend = est %>% select(year, biomass) %>% na.omit() %>% dplyr::group_by(year) %>% dplyr::summarize(total = sum(biomass))
 low = (max(trend$total)-min(trend$total))*1/3+min(trend$total)
 high = max(trend$total)-(max(trend$total)-min(trend$total))*1/3
@@ -719,7 +726,7 @@ ggsave(file = "fig10.png", plot = fig10, units = "in", width = 11.69, height = 8
 
 
 
-### year trend of stock number
+### year trend of stock number (fig. 11)
 est = est %>% mutate(age2 = ifelse(age > 4, "5歳以上", "2-4歳"))
 summary(est)
 
@@ -750,3 +757,51 @@ th = theme(panel.grid.major = element_blank(),
 c = scale_fill_manual(values =  c("black", "white"))
 fig11 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2020, by = 1))
 ggsave(file = "fig11.png", plot = fig5, units = "in", width = 11.69, height = 8.27)
+
+
+
+### year trend of fishing (fig. 13)
+# F values
+g = ggplot(fishing_trend %>% filter(data == "f") %>% na.omit(), aes(x = year, y = value))
+p = geom_point(size = 3)
+l = geom_line(size = 1)
+lab = labs(x = "", y = "F値")
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_blank(),
+           strip.text.x = element_text(size = rel(1.5)),
+           legend.position = c(0.1, 0.8),
+           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+trend_f = g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2020, by = 2), expand = c(0, 0.5))
+
+
+# catch rate
+g = ggplot(fishing_trend %>% filter(data == "rate") %>% na.omit(), aes(x = year, y = value))
+p = geom_point(size = 3)
+l = geom_line(size = 1)
+lab = labs(x = "年", y = "漁獲割合（%）")
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_blank(),
+           strip.text.x = element_text(size = rel(1.5)),
+           legend.position = c(0.1, 0.8),
+           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+trend_catch_rate = g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2020, by = 2), expand = c(0, 0.5))
+
+fig12 = grid.arrange(trend_f, trend_catch_rate, ncol = 1)
+ggsave(file = "fig12.png", plot = fig12, units = "in", width = 11.69, height = 8.27)
+
+
+
+
+
+
+
