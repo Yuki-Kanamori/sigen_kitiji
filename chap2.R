@@ -29,7 +29,7 @@
 # step 2 努力量のトレンド   ※fig. 6
 # step 3 CPUEのトレンド     ※fig. 8
 # step 4 資源量推定         ※figs. 10, 11, and 12
-
+# step 5 資源量推定(南北別) ※fig. A3-3
 
 
 # -------------------------------------------------------------------------
@@ -818,3 +818,58 @@ ggsave(file = "fig12.png", plot = fig12, units = "in", width = 11.69, height = 8
 #            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
 # g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2020, by = 2), expand = c(0, 0.5))+scale_y_continuous(limits = c(0, 0.5), sec.axis = sec_axis(~ .*100/2, name = "漁獲割合（%）"))
 
+
+
+
+# step 5; estimation of stock abundance in North and South  (number & biomass) ---------------------------------------------------------
+ns = read.csv("trawl_ns_length.csv", fileEncoding = "CP932")
+summary(ns)
+ns[is.na(ns)] = 0
+ns = ns %>% dplyr::rename(year = 年, area = 南北) %>% gather(key = size_class, value = number, -c("year", "area"))
+ns = ns %>% mutate(size_class = as.numeric(str_sub(ns$size_class, 2,3)))
+summary(ns)
+
+net_eff = data.frame(size = seq(15, 315, 10)) %>% mutate(q = 0.738/(1+1525*exp(-0.0824*net_eff$size)), size_class = rep(1:nrow(net_eff)))
+summary(net_eff)
+
+ns = left_join(ns, net_eff, by = "size_class")
+summary(ns)
+ns = ns %>% mutate(number_sel = ns$number/ns$q)
+
+# ns2 = ddply(ns, .(year, area), summarize, total = sum(number_sel))
+# ns2 = ns2 %>% spread(key = area, value = total)
+# summary(ns2)
+# ns2$n_rate = ns2$北部/(ns2$北部+ns2$南部)
+
+ns = ns %>% mutate(weight = 1.867*10^(-5)*ns$size^(3.068))
+ns = ns %>% mutate(biomass_sel = ns$number_sel*ns$weight)
+
+ns3 = ddply(ns, .(year, area), summarize, total_number = sum(number_sel), total_biomass = sum(biomass_sel))
+ns4 = left_join(ns3 %>% select(-total_biomass) %>% spread(key = area, value = total_number), ns3 %>% select(-total_number) %>% spread(key = area, value = total_biomass), by = "year") %>% mutate(n_rate_number = ns4$北部.x/(ns4$南部.x+ns4$北部.x), n_rate_biomass = ns4$北部.y/(ns4$南部.y+ns4$北部.y))
+
+head(trend)  
+trend_ns = left_join(trend, ns4 %>% select(year, n_rate_biomass), by = "year")
+trend_ns = trend_ns %>% mutate(total_n = (trend_ns$total)/1000*trend_ns$n_rate_biomass, total_s = (trend_ns$total)/1000*(1-trend_ns$n_rate_biomass)) %>% select(year, total_n, total_s) %>% gather(key = data, value = biomass_sel, -year) %>% mutate(area = rep(c("北部", "南部"), each = length(unique(trend_ns$year)))) %>% na.omit()
+
+
+
+### fig. A3-3
+levels(trend_ns$area)
+trend_ns$area = factor(trend_ns$area, levels = c("北部", "南部"))
+
+g = ggplot(trend_ns, aes(x = year, y = biomass_sel, fill = area))
+b = geom_bar(stat = "identity", width = 0.5, colour = "black")
+lab = labs(x = "年", y = "漁獲量（千トン）", legend = NULL)
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_blank(),
+           strip.text.x = element_text(size = rel(1.5)),
+           legend.position = c(0.1, 0.8),
+           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+c = scale_fill_manual(values =  c("white", "black"))
+fig_a33 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2019, by = 2), expand= c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 15))
+ggsave(file = "fig11.png", plot = fig5, units = "in", width = 11.69, height = 8.27)
