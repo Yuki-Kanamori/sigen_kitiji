@@ -911,3 +911,20 @@ z_abc = f_limit+M
 
 abc_limit = (f_limit*(1-exp(-z_abc)))/z_abc*total_biomass_this
 abc_target = (f_target*(1-exp(-z_abc)))/z_abc*total_biomass_this
+
+
+
+
+# step 6; spawner-recruitment relationship ----------------------
+summary(ns)
+ns_rec = ddply(ns, .(year, size_class, size, q, weight), summarize, number = sum(number), number_sel = sum(number_sel))
+survival_2month2 = survival_2month %>% mutate(year = year)
+ns_rec = left_join(ns_rec, survival_2month2, by = "year") %>% mutate(weight = 1.867*10^(-5)*((ns_rec$size_class+0.5)*10)^(3.068))
+
+ns_rec2 = ns_rec %>% mutate(number_sel2 = number_sel*surv, year2 = year+1, maturity = 100/(1+exp(-1.967*((size_class+0.5)-15.309)))) %>% mutate(number_adult = number_sel2*maturity*0.01) %>% mutate(biomass_adult = number_adult*weight)
+
+
+ns_rec3 = ddply(ns_rec2, .(year2), summarize, number_female = sum(biomass_adult)/2)
+
+
+head(est)
