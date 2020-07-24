@@ -917,14 +917,26 @@ abc_target = (f_target*(1-exp(-z_abc)))/z_abc*total_biomass_this
 
 # step 6; spawner-recruitment relationship ----------------------
 summary(ns)
-ns_rec = ddply(ns, .(year, size_class, size, q, weight), summarize, number = sum(number), number_sel = sum(number_sel))
-survival_2month2 = survival_2month %>% mutate(year = year)
+# test = ddply(ns, .(year, size_class, size), summarize, number = sum(number)/0.3)
+
+ns_rec = ddply(ns, .(year, size_class, size), summarize, number = sum(number))
+# 
+# net_eff = data.frame(size = seq(15, 315, 10)) %>% mutate(size_class = rep(1:nrow(net_eff)))
+# net_eff = net_eff %>% mutate(q = 0.738/(1+1525*exp(-0.0824*net_eff$size_class)))
+# 
+net_eff = data.frame(size = seq(15, 315, 10)) 
+net_eff = net_eff %>% mutate(q = 0.738/(1+1525*exp(-0.0824*net_eff$size)), size_class = rep(1:nrow(net_eff)))
+ns_rec = left_join(ns_rec, net_eff, by = c("size", "size_class"))
+ns_rec = ns_rec %>% mutate(number_sel = number/q)
+
+survival_2month2 = survival_2month %>% mutate(year = year-1)
+survival_2month2_latest = abind(survival_2month2 %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-2) %>% select(surv), as.numeric(str_sub(Sys.Date(), 1, 4))-1) %>% data.frame
+survival_2month2 = abind(survival_2month2, survival_2month2_latest, along = 1) %>% data.frame() %>% dplyr::rename(year = V2)
+
 ns_rec = left_join(ns_rec, survival_2month2, by = "year") %>% mutate(weight = 1.867*10^(-5)*((ns_rec$size_class+0.5)*10)^(3.068))
 
 ns_rec2 = ns_rec %>% mutate(number_sel2 = number_sel*surv, year2 = year+1, maturity = 100/(1+exp(-1.967*((size_class+0.5)-15.309)))) %>% mutate(number_adult = number_sel2*maturity*0.01) %>% mutate(biomass_adult = number_adult*weight)
 
-
 ns_rec3 = ddply(ns_rec2, .(year2), summarize, number_female = sum(biomass_adult)/2)
+rec_number = est %>% filter()
 
-
-head(est)
