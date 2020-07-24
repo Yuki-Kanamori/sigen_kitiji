@@ -831,7 +831,8 @@ ns = ns %>% dplyr::rename(year = 年, area = 南北) %>% gather(key = size_class
 ns = ns %>% mutate(size_class = as.numeric(str_sub(ns$size_class, 2,3)))
 summary(ns)
 
-net_eff = data.frame(size = seq(15, 315, 10)) %>% mutate(q = 0.738/(1+1525*exp(-0.0824*net_eff$size)), size_class = rep(1:nrow(net_eff)))
+net_eff = data.frame(size = seq(15, 315, 10)) 
+net_eff = net_eff %>% mutate(q = 0.738/(1+1525*exp(-0.0824*net_eff$size)), size_class = rep(1:nrow(net_eff)))
 summary(net_eff)
 
 ns = left_join(ns, net_eff, by = "size_class")
@@ -847,7 +848,8 @@ ns = ns %>% mutate(weight = 1.867*10^(-5)*ns$size^(3.068))
 ns = ns %>% mutate(biomass_sel = ns$number_sel*ns$weight)
 
 ns3 = ddply(ns, .(year, area), summarize, total_number = sum(number_sel), total_biomass = sum(biomass_sel))
-ns4 = left_join(ns3 %>% select(-total_biomass) %>% spread(key = area, value = total_number), ns3 %>% select(-total_number) %>% spread(key = area, value = total_biomass), by = "year") %>% mutate(n_rate_number = ns4$北部.x/(ns4$南部.x+ns4$北部.x), n_rate_biomass = ns4$北部.y/(ns4$南部.y+ns4$北部.y))
+ns4 = left_join(ns3 %>% select(-total_biomass) %>% spread(key = area, value = total_number), ns3 %>% select(-total_number) %>% spread(key = area, value = total_biomass), by = "year") 
+ns4 = ns4 %>% mutate(n_rate_number = ns4$北部.x/(ns4$南部.x+ns4$北部.x), n_rate_biomass = ns4$北部.y/(ns4$南部.y+ns4$北部.y))
 
 head(trend)  
 trend_ns = left_join(trend, ns4 %>% select(year, n_rate_biomass), by = "year")
@@ -881,9 +883,31 @@ ggsave(file = "fig_a33.png", plot = fig_a33, units = "in", width = 11.69, height
 
 # step 6; get ABC ----------------------------------------------------------
 f_current = fishing_rate %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-1)-3)) %>% summarize(mean(f))
-s_pre = Z %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1))
-s_current = exp(-s_pre$z)
 
-s1_pre = survival %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-1)-3), age == 2)
-s1_current = mean(s1_pre$surv)
+# s_pre = Z %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1))
+# s_current = exp(-s_pre$z)
+s_current = exp(-(Z %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1)) %>% select(z)))
 
+# s1_pre = survival %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-1)-3), age == 2)
+# s1_current = mean(s1_pre$surv)
+s1_current = survival %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-1)-3), age == 2) %>% summarize(mean(surv))
+
+number_2old_oct_last = trawl %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-1, age == 1) %>% select(number)/1000 * s1_current
+number_2old_jan_this = number_2old_oct_last*survival_2month%>%filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-1) %>% select(surv)
+
+number_2old_jan_this_sel = number_2old_jan_this/q%>%filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-1, age == 2)%>% select(q)
+
+abund_abc = est %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1)) %>% select(number, biomass, year, age) %>% dplyr::rename(number_est = number, biomass_est = biomass)
+abund_abc = left_join(abund_abc, weight %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1)), by = c("year", "age"))
+abund_abc = abund_abc %>% mutate(number_this = number_est/1000*s_current)
+abund_abc[1, ncol(abund_abc)] = number_2old_jan_this_sel
+abund_abc = abund_abc %>% mutate(biomass_this = number_this*weight/1000)
+
+total_biomass_this = sum(abund_abc$biomass_this)
+
+f_limit = 0.058
+f_target = f_limit*0.8
+z_abc = f_limit+M
+
+abc_limit = (f_limit*(1-exp(-z_abc)))/z_abc*total_biomass_this
+abc_target = (f_target*(1-exp(-z_abc)))/z_abc*total_biomass_this
