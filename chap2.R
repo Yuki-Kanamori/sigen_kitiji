@@ -937,6 +937,28 @@ ns_rec = left_join(ns_rec, survival_2month2, by = "year") %>% mutate(weight = 1.
 
 ns_rec2 = ns_rec %>% mutate(number_sel2 = number_sel*surv, year2 = year+1, maturity = 100/(1+exp(-1.967*((size_class+0.5)-15.309)))) %>% mutate(number_adult = number_sel2*maturity*0.01) %>% mutate(biomass_adult = number_adult*weight)
 
-ns_rec3 = ddply(ns_rec2, .(year2), summarize, number_female = sum(biomass_adult)/2)
-rec_number = est %>% filter()
+biomass_female = ddply(ns_rec2, .(year2), summarize, biomass = sum(biomass_adult)/2)
 
+summary(est)
+rec_number = est %>% select(number, year, age) %>% mutate(year2 = year-3) %>% filter(age == 2)
+srr = left_join(biomass_female, rec_number, by = "year2")
+srr = srr %>% mutate(rps = number/(biomass*0.001))
+
+
+
+g = ggplot(srr %>% na.omit(),  aes(x = year2, y = rps))
+b = geom_bar(stat = "identity", width = 0.5, colour = "black")
+lab = labs(x = "年級", y = "RPS（尾/kg）", legend = NULL)
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_blank(),
+           legend.text = element_text(size = rel(1.2)),
+           strip.text.x = element_text(size = rel(1.5)),
+           legend.position = c(0.1, 0.8),
+           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+fig13 = g+b+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2017, by = 2), expand= c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 60))
+ggsave(file = "fig13.png", plot = fig13, units = "in", width = 11.69, height = 8.27)
