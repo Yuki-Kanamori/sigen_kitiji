@@ -1005,9 +1005,13 @@ ggsave(file = "fig14.png", plot = fig14, units = "in", width = 11.69, height = 8
 
 
 
-g = ggplot(srr %>% na.omit(), aes(x = biomass/1000000, y = number/1000000), group = year2)
+require(ggrepel)
+srr2 = srr %>% na.omit() %>% mutate(year3 = ifelse(year2 == 1996, 1996, ifelse(year2 == 2017, 2017, NA)))
+
+g = ggplot(srr2, aes(x = biomass/1000000, y = number/1000000, label = year3))
 p = geom_point(size = 3)
 l = geom_line(size = 1)
+pa = geom_path()
 lab = labs(x = "雌親魚量（トン）", y = "2歳魚尾数（百万尾）")
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
@@ -1019,5 +1023,9 @@ th = theme(panel.grid.major = element_blank(),
            strip.text.x = element_text(size = rel(1.5)),
            legend.position = c(0.1, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
-fig15 = g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0),limits = c(0, 6000))+scale_y_continuous(expand = c(0,0),limits = c(0, 100))
+fig15 = g+p+pa+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0),limits = c(0, 6000))+scale_y_continuous(expand = c(0,0),limits = c(0, 100))+geom_label_repel()
+# +geom_text_repel(size = 5)
+# +geom_label_repel()
+# +geom_text(aes(label = year2), data = srr %>% filter(year %in% c(1996, 1999, 2002, 2005, 2008, 2011, 2014, 2017)), nudge_x = -250)
+  
 ggsave(file = "fig15.png", plot = fig15, units = "in", width = 11.69, height = 8.27)
