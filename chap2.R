@@ -31,6 +31,7 @@
 # step 4 資源量推定         ※figs. 10, 11, and 12
 # step 5 資源量推定(南北別) ※fig. A3-3
 # step 6 ABC算定
+# step 7 再生産関係         ※figs. 13, 14, and 15
 
 
 # -------------------------------------------------------------------------
@@ -899,7 +900,8 @@ number_2old_jan_this_sel = number_2old_jan_this/q%>%filter(year == as.numeric(st
 
 abund_abc = est %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1)) %>% select(number, biomass, year, age) %>% dplyr::rename(number_est = number, biomass_est = biomass)
 abund_abc = left_join(abund_abc, weight %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1)), by = c("year", "age"))
-abund_abc = abund_abc %>% mutate(number_this = number_est/1000*s_current)
+
+abund_abc = abund_abc %>% mutate(s_current = s_current$z) %>% mutate(number_this = number_est/1000*s_current)
 abund_abc[1, ncol(abund_abc)] = number_2old_jan_this_sel
 abund_abc = abund_abc %>% mutate(biomass_this = number_this*weight/1000)
 
@@ -946,6 +948,7 @@ srr = srr %>% mutate(rps = number/(biomass*0.001))
 
 
 
+### figures 
 g = ggplot(srr %>% na.omit(),  aes(x = year2, y = rps))
 b = geom_bar(stat = "identity", width = 0.5, colour = "black")
 lab = labs(x = "年級", y = "RPS（尾/kg）", legend = NULL)
@@ -962,3 +965,59 @@ th = theme(panel.grid.major = element_blank(),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
 fig13 = g+b+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2017, by = 2), expand= c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 60))
 ggsave(file = "fig13.png", plot = fig13, units = "in", width = 11.69, height = 8.27)
+
+
+
+g = ggplot(srr %>% na.omit(), aes(x = year2, y = number/1000000))
+p = geom_point(size = 3)
+l = geom_line(size = 1)
+lab = labs(x = "", y = "2歳魚尾数（百万尾）")
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_blank(),
+           strip.text.x = element_text(size = rel(1.5)),
+           legend.position = c(0.1, 0.8),
+           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+ko = g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2017, by = 2), expand = c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 100))
+
+g = ggplot(srr %>% na.omit(), aes(x = year2, y = biomass/1000000))
+p = geom_point(size = 3)
+l = geom_line(size = 1)
+lab = labs(x = "年級", y = "雌親魚量（トン）")
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_blank(),
+           strip.text.x = element_text(size = rel(1.5)),
+           legend.position = c(0.1, 0.8),
+           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+oya = g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2017, by = 2), expand = c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 6000))
+
+fig14 = grid.arrange(ko, oya, ncol = 1)
+ggsave(file = "fig14.png", plot = fig14, units = "in", width = 11.69, height = 8.27)
+
+
+
+g = ggplot(srr %>% na.omit(), aes(x = biomass/1000000, y = number/1000000), group = year2)
+p = geom_point(size = 3)
+l = geom_line(size = 1)
+lab = labs(x = "雌親魚量（トン）", y = "2歳魚尾数（百万尾）")
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_blank(),
+           strip.text.x = element_text(size = rel(1.5)),
+           legend.position = c(0.1, 0.8),
+           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+fig15 = g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0),limits = c(0, 6000))+scale_y_continuous(expand = c(0,0),limits = c(0, 100))
+ggsave(file = "fig15.png", plot = fig15, units = "in", width = 11.69, height = 8.27)
