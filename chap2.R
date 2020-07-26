@@ -31,6 +31,7 @@
 # step 4 資源量推定         ※figs. 10, 11, and 12
 # step 5 資源量推定(南北別) ※fig. A3-3
 # step 6 ABC算定
+# step 7 再生産関係         ※figs. 13, 14, and 15
 
 
 # -------------------------------------------------------------------------
@@ -831,7 +832,8 @@ ns = ns %>% dplyr::rename(year = 年, area = 南北) %>% gather(key = size_class
 ns = ns %>% mutate(size_class = as.numeric(str_sub(ns$size_class, 2,3)))
 summary(ns)
 
-net_eff = data.frame(size = seq(15, 315, 10)) %>% mutate(q = 0.738/(1+1525*exp(-0.0824*net_eff$size)), size_class = rep(1:nrow(net_eff)))
+net_eff = data.frame(size = seq(15, 315, 10)) 
+net_eff = net_eff %>% mutate(q = 0.738/(1+1525*exp(-0.0824*net_eff$size)), size_class = rep(1:nrow(net_eff)))
 summary(net_eff)
 
 ns = left_join(ns, net_eff, by = "size_class")
@@ -847,7 +849,8 @@ ns = ns %>% mutate(weight = 1.867*10^(-5)*ns$size^(3.068))
 ns = ns %>% mutate(biomass_sel = ns$number_sel*ns$weight)
 
 ns3 = ddply(ns, .(year, area), summarize, total_number = sum(number_sel), total_biomass = sum(biomass_sel))
-ns4 = left_join(ns3 %>% select(-total_biomass) %>% spread(key = area, value = total_number), ns3 %>% select(-total_number) %>% spread(key = area, value = total_biomass), by = "year") %>% mutate(n_rate_number = ns4$北部.x/(ns4$南部.x+ns4$北部.x), n_rate_biomass = ns4$北部.y/(ns4$南部.y+ns4$北部.y))
+ns4 = left_join(ns3 %>% select(-total_biomass) %>% spread(key = area, value = total_number), ns3 %>% select(-total_number) %>% spread(key = area, value = total_biomass), by = "year") 
+ns4 = ns4 %>% mutate(n_rate_number = ns4$北部.x/(ns4$南部.x+ns4$北部.x), n_rate_biomass = ns4$北部.y/(ns4$南部.y+ns4$北部.y))
 
 head(trend)  
 trend_ns = left_join(trend, ns4 %>% select(year, n_rate_biomass), by = "year")
@@ -881,9 +884,148 @@ ggsave(file = "fig_a33.png", plot = fig_a33, units = "in", width = 11.69, height
 
 # step 6; get ABC ----------------------------------------------------------
 f_current = fishing_rate %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-1)-3)) %>% summarize(mean(f))
-s_pre = Z %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1))
-s_current = exp(-s_pre$z)
 
-s1_pre = survival %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-1)-3), age == 2)
-s1_current = mean(s1_pre$surv)
+# s_pre = Z %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1))
+# s_current = exp(-s_pre$z)
+s_current = exp(-(Z %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1)) %>% select(z)))
 
+# s1_pre = survival %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-1)-3), age == 2)
+# s1_current = mean(s1_pre$surv)
+s1_current = survival %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-1)-3), age == 2) %>% summarize(mean(surv))
+
+number_2old_oct_last = trawl %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-1, age == 1) %>% select(number)/1000 * s1_current
+number_2old_jan_this = number_2old_oct_last*survival_2month%>%filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-1) %>% select(surv)
+
+number_2old_jan_this_sel = number_2old_jan_this/q%>%filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-1, age == 2)%>% select(q)
+
+abund_abc = est %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1)) %>% select(number, biomass, year, age) %>% dplyr::rename(number_est = number, biomass_est = biomass)
+abund_abc = left_join(abund_abc, weight %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1)), by = c("year", "age"))
+
+abund_abc = abund_abc %>% mutate(s_current = s_current$z) %>% mutate(number_this = number_est/1000*s_current)
+abund_abc[1, ncol(abund_abc)] = number_2old_jan_this_sel
+abund_abc = abund_abc %>% mutate(biomass_this = number_this*weight/1000)
+
+total_biomass_this = sum(abund_abc$biomass_this)
+
+f_limit = 0.058
+f_target = f_limit*0.8
+z_abc = f_limit+M
+
+abc_limit = (f_limit*(1-exp(-z_abc)))/z_abc*total_biomass_this
+abc_target = (f_target*(1-exp(-z_abc)))/z_abc*total_biomass_this
+
+
+
+
+# step 6; spawner-recruitment relationship ----------------------
+summary(ns)
+# test = ddply(ns, .(year, size_class, size), summarize, number = sum(number)/0.3)
+
+ns_rec = ddply(ns, .(year, size_class, size), summarize, number = sum(number))
+# 
+# net_eff = data.frame(size = seq(15, 315, 10)) %>% mutate(size_class = rep(1:nrow(net_eff)))
+# net_eff = net_eff %>% mutate(q = 0.738/(1+1525*exp(-0.0824*net_eff$size_class)))
+# 
+net_eff = data.frame(size = seq(15, 315, 10)) 
+net_eff = net_eff %>% mutate(q = 0.738/(1+1525*exp(-0.0824*net_eff$size)), size_class = rep(1:nrow(net_eff)))
+ns_rec = left_join(ns_rec, net_eff, by = c("size", "size_class"))
+ns_rec = ns_rec %>% mutate(number_sel = number/q)
+
+survival_2month2 = survival_2month %>% mutate(year = year-1)
+survival_2month2_latest = abind(survival_2month2 %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-2) %>% select(surv), as.numeric(str_sub(Sys.Date(), 1, 4))-1) %>% data.frame
+survival_2month2 = abind(survival_2month2, survival_2month2_latest, along = 1) %>% data.frame() %>% dplyr::rename(year = V2)
+
+ns_rec = left_join(ns_rec, survival_2month2, by = "year") %>% mutate(weight = 1.867*10^(-5)*((ns_rec$size_class+0.5)*10)^(3.068))
+
+ns_rec2 = ns_rec %>% mutate(number_sel2 = number_sel*surv, year2 = year+1, maturity = 100/(1+exp(-1.967*((size_class+0.5)-15.309)))) %>% mutate(number_adult = number_sel2*maturity*0.01) %>% mutate(biomass_adult = number_adult*weight)
+
+biomass_female = ddply(ns_rec2, .(year2), summarize, biomass = sum(biomass_adult)/2)
+
+summary(est)
+rec_number = est %>% select(number, year, age) %>% mutate(year2 = year-3) %>% filter(age == 2)
+srr = left_join(biomass_female, rec_number, by = "year2")
+srr = srr %>% mutate(rps = number/(biomass*0.001))
+
+
+
+### figures 
+g = ggplot(srr %>% na.omit(),  aes(x = year2, y = rps))
+b = geom_bar(stat = "identity", width = 0.5, colour = "black")
+lab = labs(x = "年級", y = "RPS（尾/kg）", legend = NULL)
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_blank(),
+           legend.text = element_text(size = rel(1.2)),
+           strip.text.x = element_text(size = rel(1.5)),
+           legend.position = c(0.1, 0.8),
+           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+fig13 = g+b+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2017, by = 2), expand= c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 60))
+ggsave(file = "fig13.png", plot = fig13, units = "in", width = 11.69, height = 8.27)
+
+
+
+g = ggplot(srr %>% na.omit(), aes(x = year2, y = number/1000000))
+p = geom_point(size = 3)
+l = geom_line(size = 1)
+lab = labs(x = "", y = "2歳魚尾数（百万尾）")
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_blank(),
+           strip.text.x = element_text(size = rel(1.5)),
+           legend.position = c(0.1, 0.8),
+           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+ko = g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2017, by = 2), expand = c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 100))
+
+g = ggplot(srr %>% na.omit(), aes(x = year2, y = biomass/1000000))
+p = geom_point(size = 3)
+l = geom_line(size = 1)
+lab = labs(x = "年級", y = "雌親魚量（トン）")
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_blank(),
+           strip.text.x = element_text(size = rel(1.5)),
+           legend.position = c(0.1, 0.8),
+           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+oya = g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2017, by = 2), expand = c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 6000))
+
+fig14 = grid.arrange(ko, oya, ncol = 1)
+ggsave(file = "fig14.png", plot = fig14, units = "in", width = 11.69, height = 8.27)
+
+
+
+require(ggrepel)
+srr2 = srr %>% na.omit() %>% mutate(year3 = ifelse(year2 == 1996, 1996, ifelse(year2 == 2017, 2017, NA)))
+
+g = ggplot(srr2, aes(x = biomass/1000000, y = number/1000000, label = year3))
+p = geom_point(size = 3)
+l = geom_line(size = 1)
+pa = geom_path()
+lab = labs(x = "雌親魚量（トン）", y = "2歳魚尾数（百万尾）")
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_blank(),
+           strip.text.x = element_text(size = rel(1.5)),
+           legend.position = c(0.1, 0.8),
+           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+fig15 = g+p+pa+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0),limits = c(0, 6000))+scale_y_continuous(expand = c(0,0),limits = c(0, 100))+geom_label_repel()
+# +geom_text_repel(size = 5)
+# +geom_label_repel()
+# +geom_text(aes(label = year2), data = srr %>% filter(year %in% c(1996, 1999, 2002, 2005, 2008, 2011, 2014, 2017)), nudge_x = -250)
+  
+ggsave(file = "fig15.png", plot = fig15, units = "in", width = 11.69, height = 8.27)
