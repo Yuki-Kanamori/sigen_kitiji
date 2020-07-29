@@ -246,9 +246,9 @@ miya_s = miya %>% filter(魚種コード == "こきちじ") %>% select(漁業種
 miya2 = left_join(miya_l, miya_s, by = "method")
 miya2[is.na(miya2)] = 0
 miya2 = miya2 %>% mutate(sum_temp = sum.x+sum.y) %>% select(method, sum_temp)
-miya_sum = miya2 %>% filter(method != "その他漁業種") %>% filter(method != "その他漁業種・全漁法2")
+miya_sum = miya2 %>% filter(method != "その他漁業種") %>% filter(method != "その他漁業種・全漁法2") %>% filter(method != "沿岸小漁")
 miya_sum$method
-miya_sum$method2 = c("沖底", "刺網", "沿岸小漁?", "延縄")
+miya_sum$method2 = c("沖底", "刺網", "延縄") #沿岸小漁=その他
 miya_sum = miya_sum %>% select(-method) %>% dplyr::group_by(method2) %>% dplyr::summarize(sum = sum(sum_temp))
 
 
