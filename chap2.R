@@ -49,6 +49,7 @@ require(investr)
 require(stringr)
 require(abind)
 require(gridExtra)
+require(ggrepel)
 
 # set working directory -----------------------------------------------------------
 # please change here
@@ -1005,7 +1006,6 @@ ggsave(file = "fig14.png", plot = fig14, units = "in", width = 11.69, height = 8
 
 
 
-require(ggrepel)
 srr2 = srr %>% na.omit() %>% mutate(year3 = ifelse(year2 == 1996, 1996, ifelse(year2 == 2017, 2017, NA)))
 
 g = ggplot(srr2, aes(x = biomass/1000000, y = number/1000000, label = year3))
@@ -1028,4 +1028,4 @@ fig15 = g+p+pa+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuou
 # +geom_label_repel()
 # +geom_text(aes(label = year2), data = srr %>% filter(year %in% c(1996, 1999, 2002, 2005, 2008, 2011, 2014, 2017)), nudge_x = -250)
   
-ggsave(file = "fig15.png", plot = fig15, units = "in", width = 11.69, height = 8.27)
+ggsave(file = "fig15_2.png", plot = fig15, units = "in", width = 11.69, height = 8.27, scale = 0.9)
