@@ -895,9 +895,9 @@ s_current = exp(-(Z %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1)
 s1_current = survival %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-1)-3), age == 2) %>% summarize(mean(surv))
 
 number_2old_oct_last = trawl %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-1, age == 1) %>% select(number)/1000 * s1_current
-number_2old_jan_this = number_2old_oct_last*survival_2month%>%filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-1) %>% select(surv)
+number_2old_jan_this = number_2old_oct_last*survival_2month %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-1) %>% select(surv)
 
-number_2old_jan_this_sel = number_2old_jan_this/q%>%filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-1, age == 2)%>% select(q)
+number_2old_jan_this_sel = number_2old_jan_this/q %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-1, age == 2) %>% select(q)
 
 abund_abc = est %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1)) %>% select(number, biomass, year, age) %>% dplyr::rename(number_est = number, biomass_est = biomass)
 abund_abc = left_join(abund_abc, weight %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1)), by = c("year", "age"))
