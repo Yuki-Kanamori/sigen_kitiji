@@ -353,18 +353,18 @@ eff$label = factor(eff$label, levels = c("尻屋崎〜岩手沖のかけ廻し",
 
 # g = ggplot(eff, aes(x = year, y = sum/1000, shape = label, fill = label, size = label))
 g = ggplot(eff, aes(x = year, y = sum/1000, shape = label, linetype = label, fill = label))
-p = geom_point(size = 3)
+p = geom_point(size = 5)
 l = geom_line(size = 1)
 lab = labs(x = "年", y = "有漁網数 (千)", shape = "漁業種")
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
-           axis.title.x = element_text(size = rel(1.5)),
-           axis.title.y = element_text(size = rel(1.5)),
+           axis.text.x = element_text(size = rel(1.5), angle = 90),
+           axis.text.y = element_text(size = rel(2)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
            legend.title = element_blank(),
-           legend.text = element_text(size = rel(1.2)),
-           strip.text.x = element_text(size = rel(1.5)),
+           legend.text = element_text(size = rel(1.5)),
+           strip.text.x = element_text(size = rel(2)),
            legend.position = c(0.8, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
 # fig6 = g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0, 0.5), breaks=seq(1972, 2019, by = 2))+scale_y_continuous(expand = c(0,0),limits = c(0, 30))+scale_shape_manual(values = c(22, 17, 18))+scale_fill_manual(values = c('white','black','black'))+scale_size_manual(values = c(3,3,4))+scale_linetype_manual(values = c("dotted", "solid", "dotted"))
@@ -405,67 +405,67 @@ cpue2$label = factor(cpue2$label, levels = c("尻屋崎〜岩手沖のかけ廻�
 
 ### かけ廻し
 g = ggplot(cpue2 %>% filter(method == "かけ廻し"), aes(x = year, y = cpue, shape = label, fill = label))
-p = geom_point(shape = 22, size = 3, fill = "white")
+p = geom_point(shape = 22, size = 4, fill = "white")
 l = geom_line(linetype = "dotted", size = 1)
 lab = labs(x = "年", y = "CPUE  (kg/網)", shape = "")
 f = facet_wrap(~ label, ncol = 1)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
+           axis.text.x = element_text(size = rel(1.5), angle = 90),
+           axis.text.y = element_text(size = rel(2)),
            axis.title.x = element_blank(),
            axis.title.y = element_text(size = rel(1.5)),
-           legend.title = element_text(size = 13),
-           strip.text.x = element_text(size = rel(1.5)))
+           legend.title = element_text(size = 15),
+           strip.text.x = element_text(size = rel(2)))
 kake = g+l+p+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 2), expand=c(0, 0.5))+scale_y_continuous(limits = c(0, 60))
 
 ### 2そう
 g = ggplot(cpue2 %>% filter(method == "2そう曳き"), aes(x = year, y = cpue, shape = label))
-p = geom_point(shape = 17, size = 3)
+p = geom_point(shape = 17, size = 5)
 l = geom_line(linetype = "solid", size = 1)
 lab = labs(x = "年", y = "CPUE  (kg/網)", shape = "")
 f = facet_wrap(~ label, ncol = 1)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
+           axis.text.x = element_text(size = rel(1.5), angle = 90),
+           axis.text.y = element_text(size = rel(2)),
            axis.title.x = element_blank(),
            axis.title.y = element_text(size = rel(1.5)),
-           legend.title = element_text(size = 13),
-           strip.text.x = element_text(size = rel(1.5)))
+           legend.title = element_text(size = 15),
+           strip.text.x = element_text(size = rel(2)))
 niso = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 2), expand = c(0, 0.5))+scale_y_continuous(limits = c(0, 300))
 
 ### トロール
 g = ggplot(cpue2 %>% filter(method == "トロール"), aes(x = year, y = cpue, shape = label))
-p = geom_point(shape = 18, size = 4)
+p = geom_point(shape = 18, size = 6)
 l = geom_line(linetype = "dotted", size = 1)
 lab = labs(x = "年", y = "CPUE  (kg/網)", shape = "")
 f = facet_wrap(~ label, ncol = 1)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
+           axis.text.x = element_text(size = rel(1.5), angle = 90),
+           axis.text.y = element_text(size = rel(2)),
            axis.title.x = element_blank(),
            axis.title.y = element_text(size = rel(1.5)),
-           legend.title = element_text(size = 13),
-           strip.text.x = element_text(size = rel(1.5)))
+           legend.title = element_text(size = 15),
+           strip.text.x = element_text(size = rel(2)))
 tra = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 2), expand=c(0, 0.5))+scale_y_continuous(limits = c(0, 120))
 
 ### weighted CPUE
 w_cpue$label = "太平洋北部"
 g = ggplot(w_cpue, aes(x = year, y = weighted_cpue))
-p = geom_point(shape = 20, size = 4)
+p = geom_point(shape = 20, size = 6)
 l = geom_line(size = 0.6, linetype = "solid")
 lab = labs(x = "年", y = "重み付CPUE \n（相対値）", shape = "")
 f = facet_wrap(~ label, ncol = 1)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
-           axis.title.x = element_text(size = rel(1.5)),
+           axis.text.x = element_text(size = rel(1.5), angle = 90),
+           axis.text.y = element_text(size = rel(2)),
+           axis.title.x = element_text(size = rel(2)),
            axis.title.y = element_text(size = rel(1.5)),
-           legend.title = element_text(size = 13),
-           strip.text.x = element_text(size = rel(1.5)))
+           legend.title = element_text(size = 15),
+           strip.text.x = element_text(size = rel(2)))
 w = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 2), expand=c(0, 0.5))+scale_y_continuous(limits = c(0, 3))
 
 fig8 = grid.arrange(kake, niso, tra, w, ncol = 1)
@@ -702,26 +702,28 @@ trend = est %>% select(year, biomass) %>% na.omit() %>% dplyr::group_by(year) %>
 catch_rate = left_join(catchF, trend, by = "year") %>% mutate(rate = catch/total*100)
 fishing_trend = left_join(catch_rate, fishing_rate, by = "year") %>% select(year, rate, f) %>% gather(key = data, value = value, 2:3) %>% mutate(data2 = ifelse(data == "f", "F値", "漁獲割合"))
 
+mean = fishing_trend %>% filter(data == "rate") %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-1)-3)) %>% select(value)
+(mean_fishing_trend = mean(mean$value))
 
 
 ### figures 
-### year trend of stock biomass (fig. 12)
+### year trend of stock biomass (fig. 10)
 trend = est %>% select(year, biomass) %>% na.omit() %>% dplyr::group_by(year) %>% dplyr::summarize(total = sum(biomass))
 low = (max(trend$total)-min(trend$total))*1/3+min(trend$total)
 high = max(trend$total)-(max(trend$total)-min(trend$total))*1/3
 
 g = ggplot(trend, aes(x = year, y = total/1000))
-p = geom_point(shape = 20, size = 4)
+p = geom_point(shape = 20, size = 6)
 l = geom_line(size = 0.6, linetype = "solid")
 lab = labs(x = "年", y = "資源量（千トン）", shape = "")
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
-           axis.title.x = element_text(size = rel(1.5)),
-           axis.title.y = element_text(size = rel(1.5)),
+           axis.text.x = element_text(size = rel(1.5), angle = 90),
+           axis.text.y = element_text(size = rel(2)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
            legend.title = element_text(size = 13),
-           strip.text.x = element_text(size = rel(1.5)))
+           strip.text.x = element_text(size = rel(2)))
 level_l = geom_hline(yintercept = low/1000, linetype = "dashed", color = "gray50")
 level_h = geom_hline(yintercept = high/1000, linetype = "dashed", color = "gray50")
 fig10 = g+p+l+lab+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1996, 2020, by = 1))+level_l+level_h
@@ -749,13 +751,13 @@ lab = labs(x = "年", y = "資源尾数（百万尾）", legend = NULL)
 col_age = c("black", "white")
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
-           axis.title.x = element_text(size = rel(1.5)),
-           axis.title.y = element_text(size = rel(1.5)),
+           axis.text.x = element_text(size = rel(1.5), angle = 90),
+           axis.text.y = element_text(size = rel(2)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
            legend.title = element_blank(),
-           legend.text = element_text(size = rel(1.2)),
-           strip.text.x = element_text(size = rel(1.5)),
+           legend.text = element_text(size = rel(1.5)),
+           strip.text.x = element_text(size = rel(2)),
            legend.position = c(0.1, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
 c = scale_fill_manual(values =  c("black", "white"))
@@ -767,17 +769,17 @@ ggsave(file = "fig11.png", plot = fig11, units = "in", width = 11.69, height = 8
 ### year trend of fishing (fig. 13)
 # F values
 g = ggplot(fishing_trend %>% filter(data == "f") %>% na.omit(), aes(x = year, y = value))
-p = geom_point(size = 3)
+p = geom_point(size = 5)
 l = geom_line(size = 1)
 lab = labs(x = "", y = "F値")
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
-           axis.title.x = element_text(size = rel(1.5)),
-           axis.title.y = element_text(size = rel(1.5)),
+           axis.text.x = element_text(size = rel(1.5), angle = 90),
+           axis.text.y = element_text(size = rel(2)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
            legend.title = element_blank(),
-           strip.text.x = element_text(size = rel(1.5)),
+           strip.text.x = element_text(size = rel(2)),
            legend.position = c(0.1, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
 trend_f = g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2020, by = 2), expand = c(0, 0.5))
@@ -785,17 +787,17 @@ trend_f = g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuo
 
 # catch rate
 g = ggplot(fishing_trend %>% filter(data == "rate") %>% na.omit(), aes(x = year, y = value))
-p = geom_point(size = 3)
+p = geom_point(size = 5)
 l = geom_line(size = 1)
 lab = labs(x = "年", y = "漁獲割合（%）")
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
-           axis.title.x = element_text(size = rel(1.5)),
-           axis.title.y = element_text(size = rel(1.5)),
+           axis.text.x = element_text(size = rel(1.5), angle = 90),
+           axis.text.y = element_text(size = rel(2)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
            legend.title = element_blank(),
-           strip.text.x = element_text(size = rel(1.5)),
+           strip.text.x = element_text(size = rel(2)),
            legend.position = c(0.1, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
 trend_catch_rate = g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2020, by = 2), expand = c(0, 0.5))
@@ -868,13 +870,13 @@ b = geom_bar(stat = "identity", width = 0.5, colour = "black")
 lab = labs(x = "年", y = "漁獲量（千トン）", legend = NULL)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
-           axis.title.x = element_text(size = rel(1.5)),
-           axis.title.y = element_text(size = rel(1.5)),
+           axis.text.x = element_text(size = rel(1.5), angle = 90),
+           axis.text.y = element_text(size = rel(2)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
            legend.title = element_blank(),
-           legend.text = element_text(size = rel(1.2)),
-           strip.text.x = element_text(size = rel(1.5)),
+           legend.text = element_text(size = rel(1.5)),
+           strip.text.x = element_text(size = rel(2)),
            legend.position = c(0.1, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
 c = scale_fill_manual(values =  c("white", "black"))
@@ -922,7 +924,8 @@ for(i in 1:(length(abund_abc$age)-1)){
 
 abund_abc = abund_abc %>% mutate(next_year_number = next_year$number/1000) %>% mutate(next_year_biomass = next_year_number*weight/1000)
 
-total_biomass_next = sum(abund_abc$next_year_biomass)
+(total_number_next = sum(abund_abc$next_year_number))
+(total_biomass_next = sum(abund_abc$next_year_biomass))
 
 f_limit = 0.058
 f_target = f_limit*0.8
@@ -971,13 +974,13 @@ b = geom_bar(stat = "identity", width = 0.5, colour = "black")
 lab = labs(x = "年級", y = "RPS（尾/kg）", legend = NULL)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
-           axis.title.x = element_text(size = rel(1.5)),
-           axis.title.y = element_text(size = rel(1.5)),
+           axis.text.x = element_text(size = rel(1.5), angle = 90),
+           axis.text.y = element_text(size = rel(2)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
            legend.title = element_blank(),
-           legend.text = element_text(size = rel(1.2)),
-           strip.text.x = element_text(size = rel(1.5)),
+           legend.text = element_text(size = rel(1.5)),
+           strip.text.x = element_text(size = rel(2)),
            legend.position = c(0.1, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
 fig13 = g+b+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2017, by = 2), expand= c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 60))
@@ -991,12 +994,12 @@ l = geom_line(size = 1)
 lab = labs(x = "", y = "2歳魚尾数（百万尾）")
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
-           axis.title.x = element_text(size = rel(1.5)),
-           axis.title.y = element_text(size = rel(1.5)),
+           axis.text.x = element_text(size = rel(1.5), angle = 90),
+           axis.text.y = element_text(size = rel(2)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
            legend.title = element_blank(),
-           strip.text.x = element_text(size = rel(1.5)),
+           strip.text.x = element_text(size = rel(2)),
            legend.position = c(0.1, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
 ko = g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2017, by = 2), expand = c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 100))
@@ -1007,12 +1010,12 @@ l = geom_line(size = 1)
 lab = labs(x = "年級", y = "雌親魚量（トン）")
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
-           axis.title.x = element_text(size = rel(1.5)),
-           axis.title.y = element_text(size = rel(1.5)),
+           axis.text.x = element_text(size = rel(1.5), angle = 90),
+           axis.text.y = element_text(size = rel(2)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
            legend.title = element_blank(),
-           strip.text.x = element_text(size = rel(1.5)),
+           strip.text.x = element_text(size = rel(2)),
            legend.position = c(0.1, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
 oya = g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2017, by = 2), expand = c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 6000))
@@ -1031,12 +1034,12 @@ pa = geom_path()
 lab = labs(x = "雌親魚量（トン）", y = "2歳魚尾数（百万尾）")
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
-           axis.title.x = element_text(size = rel(1.5)),
-           axis.title.y = element_text(size = rel(1.5)),
+           axis.text.x = element_text(size = rel(1.5), angle = 90),
+           axis.text.y = element_text(size = rel(2)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
            legend.title = element_blank(),
-           strip.text.x = element_text(size = rel(1.5)),
+           strip.text.x = element_text(size = rel(2)),
            legend.position = c(0.1, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
 fig15 = g+p+pa+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0),limits = c(0, 6000))+scale_y_continuous(expand = c(0,0),limits = c(0, 100))+geom_label_repel()
