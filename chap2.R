@@ -36,7 +36,6 @@
 # 
 # 2-5  その他の図表
 # step 1 1歳魚の生残率のトレンド   ※fig. A4-1
-# step 2 努力量のトレンド   ※fig. 6
 
 
 # -------------------------------------------------------------------------
@@ -1074,7 +1073,7 @@ g = ggplot(surv_fig, aes(x = year, y = surv))
 p = geom_point(size = 5)
 l = geom_line(size = 1)
 pa = geom_path()
-lab = labs(x = "当年", y = "前年1歳魚に対する当年2歳魚の比")
+lab = labs(x = "当年", y = "前年1歳魚尾数に対する当年2歳魚尾数の比率")
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
            axis.text.x = element_text(size = rel(1.5), angle = 90),
