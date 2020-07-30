@@ -32,6 +32,11 @@
 # step 5 資源量推定(南北別) ※fig. A3-3
 # step 6 ABC算定
 # step 7 再生産関係         ※figs. 13, 14, and 15
+# 
+# 
+# 2-5  その他の図表
+# step 1 1歳魚の生残率のトレンド   ※fig. A4-1
+# step 2 努力量のトレンド   ※fig. 6
 
 
 # -------------------------------------------------------------------------
@@ -1048,3 +1053,37 @@ fig15 = g+p+pa+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuou
 # +geom_text(aes(label = year2), data = srr %>% filter(year %in% c(1996, 1999, 2002, 2005, 2008, 2011, 2014, 2017)), nudge_x = -250)
   
 ggsave(file = "fig15_2.png", plot = fig15, units = "in", width = 11.69, height = 8.27, scale = 0.9)
+
+
+
+
+
+# -------------------------------------------------------------------------
+# 2-5  その他の図表 
+# -------------------------------------------------------------------------
+# step 1; yearly trend of the survival rate at age 1
+surv_fig = survival %>% filter(age == 2)
+surv_fig = surv_fig %>% mutate(temp = as.numeric(str_sub(surv_fig$year, 3, 4))-1) %>% mutate(temp2 = temp+1) 
+surv_fig = surv_fig %>% mutate(temp3 = ifelse(surv_fig$temp == -1, "99", ifelse(surv_fig$temp < 10, formatC(surv_fig$temp, width = 2, flag = "0"), surv_fig$temp))) %>% mutate(temp4 = ifelse(temp2 < 10, formatC(surv_fig$temp2, width = 2, flag = "0"), ifelse(temp2 == 100, "00", temp2))) %>% mutate(xtitle = paste0(temp3, "→", temp4)) %>% select(surv, xtitle, year)
+
+surv_fig$
+unique(surv_fig$xtitle)
+
+
+g = ggplot(surv_fig, aes(x = year, y = surv))
+p = geom_point(size = 5)
+l = geom_line(size = 1)
+pa = geom_path()
+lab = labs(x = "当年", y = "前年1歳魚に対する当年2歳魚の比")
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.5), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
+           legend.title = element_blank(),
+           strip.text.x = element_text(size = rel(2)),
+           legend.position = c(0.1, 0.8),
+           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+figa41 = g+p+pa+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0))+scale_y_continuous(expand = c(0,0),limits = c(0, 12))
+ggsave(file = "figa41.png", plot = figa41, units = "in", width = 11.69, height = 8.27, scale = 0.9)
