@@ -245,22 +245,20 @@ kg = tai_hati %>% group_by(year, season, iri_bisu) %>% dplyr::summarize(sum = su
 unique(kg$iri_bisu)
 summary(kg$n_iri_bisu)
 
-pn = NULL
-length = c(seq(50, 350, 10), 1000)
-for(i in 1:length(length)){
-  for(j in 1:length(kg$n_iri_bisu)){
-    temp = pnorm(length[i], kg$meanBL[j], kg$SD[j])
-    pn = rbind(pn, temp)
-  }
-}
-length(length)*length(kg$n_iri_bisu)-length(pn)
-
-pn1 = pn[-((length(pn)-length(kg$n_iri_bisu)+1):length(pn))]
-pn2 = pn[-(1:length(kg$n_iri_bisu))]
-pn3 = cbind(pn1, pn2) %>% data.frame() 
-pn3 = pn3 %>% mutate(sa = pn2-pn1, BL = rep(c(seq(50, 350, 10), 1000), each = length(kg$n_iri_bisu)))
-
-
+# pn = NULL
+# length = c(seq(50, 350, 10), 1000)
+# for(i in 1:length(length)){
+#   for(j in 1:length(kg$n_iri_bisu)){
+#     temp = pnorm(length[i], kg$meanBL[j], kg$SD[j])
+#     pn = rbind(pn, temp)
+#   }
+# }
+# length(length)*length(kg$n_iri_bisu)-length(pn)
+# 
+# pn1 = pn[-((length(pn)-length(kg$n_iri_bisu)+1):length(pn))]
+# pn2 = pn[-(1:length(kg$n_iri_bisu))]
+# pn3 = cbind(pn1, pn2) %>% data.frame() 
+# pn3 = pn3 %>% mutate(sa = pn2-pn1, BL = rep(c(seq(50, 350, 10), 1000), each = length(kg$n_iri_bisu)))
 
 pn = NULL
 length = c(seq(50, 350, 10), 1000)
