@@ -228,11 +228,37 @@ head(tai_hati)
 summary(tai_hati)
 tai_hati = tai_hati[, c(1,2,3,5,8,9)]
 colnames(tai_hati) = c('year', 'month', 'fisheries', 'kikaku', 'irisu', 'kg')
-tai_hati = tai_hati %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"), iri_bisu = ifelse(kikaku == 13, 'P', ifelse(kikaku == 7, 'S', str_sub(irisu, -2, -1))))
+
+unique(tai_hati$kikaku)
+
+tai_hati = tai_hati %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"), iri_bisu = ifelse(kikaku == 13, 'P', ifelse(kikaku == 7, 'S', as.numeric(str_sub(irisu, -2, -1)))))
+
+unique(tai_hati$iri_bisu)
 summary(tai_hati)
 
-kg = tai_hati %>% mutate(n_iri_bisu = as.numeric(iri_bisu)) %>% group_by(year, season, n_iri_bisu) %>% dplyr::summarize(sum = sum(kg)) %>% mutate(hako = sum/7, gyokaku_bisu = hako*n_iri_bisu)
 
+a = 473.69
+b = -0.2583
+cv = 0.0448
+
+kg = tai_hati %>% group_by(year, season, iri_bisu) %>% dplyr::summarize(sum = sum(kg)) %>% filter(iri_bisu != "S") %>% filter(iri_bisu != "P") %>% mutate(n_iri_bisu = as.numeric(iri_bisu)) %>% na.omit() %>% mutate(hako = sum/7, gyokaku_bisu = hako*n_iri_bisu) %>% filter(n_iri_bisu > 1) %>% mutate(meanBL = a*n_iri_bisu^b) %>% mutate(SD = meanBL*cv)
+unique(kg$iri_bisu)
+summary(kg$n_iri_bisu)
+
+pn = NULL
+length = c(seq(50, 350, 10), 1000)
+for(i in 1:length(length)){
+  for(j in 1:length(kg$n_iri_bisu)){
+    temp = pnorm(length[i], kg$meanBL[j], kg$SD[j])
+    pn = rbind(pn, temp)
+  }
+}
+length(length)*length(kg$n_iri_bisu)-length(pn)
+
+pn1 = pn[-((length(pn)-length(kg$n_iri_bisu)+1):length(pn))]
+pn2 = pn[-(1:length(kg$n_iri_bisu))]
+pn3 = cbind(pn1, pn2) %>% data.frame() 
+pn3 = pn3 %>% mutate(sa = pn2-pn1, BL = rep(c(seq(50, 350, 10), 1000), each = length(kg$n_iri_bisu)))
 
 
 
