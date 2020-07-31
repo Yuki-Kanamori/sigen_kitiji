@@ -356,12 +356,12 @@ ggsave(file = "figa31.png", plot = figa31, units = "in", width = 11.69, height =
 
 
 lonlat = read.csv("lonlat2019.csv", fileEncoding = "CP932")
-lonlat = lonlat[, c(2,3,9:12)]
+lonlat = lonlat[, c(2,3,4,9:12)]
 colnames(lonlat)
-colnames(lonlat) = c("station_code", "depth", "lat1", "lat2", "lon1", "lon2")
+colnames(lonlat) = c("station_code", "depth", "ami", "lat1", "lat2", "lon1", "lon2")
 summary(lonlat)
-lonlat = lonlat %>% mutate(lat = lat1+round(lat2)/100, lon = lon1+round(lon2)/100, tag = paste0(station_code, depth))
-lonlat = ddply(lonlat, .(tag), summarize, m_lon = mean(lon), m_lat = mean(lat))
+lonlat = lonlat %>% mutate(lat = lat1+round(lat2)/100, lon = lon1+round(lon2)/100, tag = paste0(station_code, depth)) %>% filter(ami == 1)
+# lonlat = ddply(lonlat, .(tag), summarize, m_lon = mean(lon), m_lat = mean(lat))
 
 
 trawl_length = read.csv("trawl_ns_length2.csv", fileEncoding = "CP932")
@@ -371,9 +371,10 @@ colnames(trawl_length3)
 colnames(trawl_length3) = c("station_code", "depth")
 summary(trawl_length3)
 trawl_length3 = trawl_length3 %>% mutate(tag = paste0(station_code, depth))
+length()
 
-trawl_length3 = left_join(trawl_length3, lonlat, by = "tag") %>% distinct(tag, .keep_all = TRUE)
-
+trawl_length3 = left_join(trawl_length3, lonlat %>% select(-station_code, -depth), by = "tag") %>% distinct(tag, .keep_all = TRUE)
+levels(trawl_length3$station_code)
 
 
 ### map
@@ -395,4 +396,6 @@ th = theme(panel.grid.major = element_blank(),
            axis.title.y = element_text(size = rel(1.5)),
            strip.text = element_text(size = rel(1.3)),
            legend.title = element_text(size = 13))
-g + geom_polygon(data = japan2, group = japan$group, fill= "gray50", colour= "gray50")  + coord_map(xlim = c(140, 145), ylim = c(34, 45)) + stat_contour(aes(z=depth),binwidth=200,colour="black")+theme_bw()+th+geom_point(data = trawl_length3, aes(x = m_lon, y = m_lat, shape = station_code), size = 3)
+g + geom_polygon(data = japan2, group = japan$group, fill= "gray50", colour= "gray50")  + coord_map(xlim = c(140, 143), ylim = c(36, 42)) + stat_contour(aes(z=depth),binwidth=200,colour="black")+theme_bw()+th+geom_point(data = trawl_length3, aes(x = lon, y = lat, shape = station_code), size = 3)+scale_shape_manual(values = c(16, 4, 17, 15, 18, 8, 1, 2))
+summary(trawl_length3)
+length(unique(trawl_length3$tag))
