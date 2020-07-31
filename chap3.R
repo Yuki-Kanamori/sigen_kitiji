@@ -42,6 +42,8 @@ require(maps)
 require(mapdata)
 require(investr)
 require(stringr)
+require(gridExtra)
+require(ggrepel)
 
 # please change here -----------------------------------------------------------
 # set working directory
@@ -324,9 +326,11 @@ trawl_length2 = trawl_length2 %>% mutate(size_class = as.numeric(str_sub(trawl_l
 summary(trawl_length2)
 colnames(trawl_length2)[1] = "NS"
 trawl_length2$NS2 = ifelse(trawl_length2$NS == "N", "北部", "南部")
+levels(trawl_length2$NS2)
 trawl_length2$NS2 = factor(trawl_length2$NS2, levels = c("北部", "南部"))
+trawl_length2 = ddply(trawl_length2, .(size_class, NS2), summarize, total = sum(extention_number))
 
-g = ggplot(trawl_length2, aes(x = size_class, y = extention_number/1000, fill = NS2))
+g = ggplot(trawl_length2, aes(x = size_class, y = total/1000, fill = NS2))
 b = geom_bar(stat = "identity", width = 0.8, colour = "black", position = "dodge")
 lab = labs(x = "体長（cm）", y = "資源尾数 (千尾)", title = "(C)")
 th = theme(panel.grid.major = element_blank(),
@@ -342,4 +346,7 @@ th = theme(panel.grid.major = element_blank(),
            legend.position = c(0.1, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
 c = scale_fill_manual(values =  c("black", "white"))
-figa31c = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(0, 30, by = 2), expand = c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 4))
+figa31c = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(0, 30, by = 2), expand = c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 25))
+
+figa31 = grid.arrange(figa31b, figa31c, ncol = 1)
+ggsave(file = "figa31.png", plot = figa31, units = "in", width = 11.69, height = 8.27)
