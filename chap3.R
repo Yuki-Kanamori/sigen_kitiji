@@ -289,7 +289,6 @@ pn2 = ddply(pn, .(season, BL), summarize, total_number = sum(number))
 # ---------------------------------------------------------------
 trawl_length = read.csv("trawl_ns_length2.csv", fileEncoding = "CP932")
 trawl_length1 = trawl_length[, c(6,10,11,15)]
-trawl_length2 = trawl_length[, c(6,10,11,14, 16:ncol(trawl_length))]
 
 colnames(trawl_length1)
 colnames(trawl_length1) = c("NS", "station_code", "depth", "total_number")
@@ -301,7 +300,7 @@ number_at_depth$depth2 = factor(number_at_depth$depth, levels = c("150", "250", 
 
 g = ggplot(number_at_depth, aes(x = depth2, y = total/1000))
 b = geom_bar(stat = "identity", width = 1, colour = "black")
-lab = labs(x = "水深（m）", y = "漁獲尾数 (千尾)", title = "(B)")
+lab = labs(x = "水深（m）", y = "資源尾数 (千尾)", title = "(B)")
 f = facet_wrap(~ station_code, ncol = 2)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
@@ -318,8 +317,8 @@ figa31b = g+b+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_y_continuo
 
 
 
-
-colnames(trawl_length)
+trawl_length2 = trawl_length[, c(6,10,11,14, 16:ncol(trawl_length))]
+colnames(trawl_length2)
 trawl_length = trawl_length %>% dplyr::gather(key = size_class, value = extention_number, )
 
 colnames(trawl_length) = c("NS", "station_code", "depth", "catch_number", "")
