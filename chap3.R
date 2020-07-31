@@ -21,7 +21,7 @@
 #      (引き継ぎ資料の3-5部分)     
 # 
 # 
-# 3-6  補足図3-1; 年齢別体長組成
+# 3-6  補足図3-2; 年齢別体長組成
 #      (引き継ぎ資料の3-6部分)
 # 
 # 
@@ -277,9 +277,49 @@ pn2 = ddply(pn, .(season, BL), summarize, total_number = sum(number))
 
 
 
-# 3-6 補足図3-1 --------------------------------------------------------------
 
 
 
 
 
+
+
+# ---------------------------------------------------------------
+# 3-5  補足図3-1; 調査地点，密度分布，及び体長組成 ---------------------------------
+# ---------------------------------------------------------------
+trawl_length = read.csv("trawl_ns_length2.csv", fileEncoding = "CP932")
+trawl_length1 = trawl_length[, c(6,10,11,15)]
+trawl_length2 = trawl_length[, c(6,10,11,14, 16:ncol(trawl_length))]
+
+colnames(trawl_length1)
+colnames(trawl_length1) = c("NS", "station_code", "depth", "total_number")
+summary(trawl_length1)
+number_at_depth = ddply(trawl_length1, .(station_code, depth), summarize, total = sum(total_number))
+# number_at_depth$depth2 = as.factor(number_at_depth$depth)
+unique(number_at_depth$depth)
+number_at_depth$depth2 = factor(number_at_depth$depth, levels = c("150", "250", "350", "450", "550", "650", "750", "900"))
+
+g = ggplot(number_at_depth, aes(x = depth2, y = total/1000))
+b = geom_bar(stat = "identity", width = 1, colour = "black")
+lab = labs(x = "水深（m）", y = "漁獲尾数 (千尾)", title = "(B)")
+f = facet_wrap(~ station_code, ncol = 2)
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.5), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
+           legend.title = element_blank(),
+           legend.text = element_text(size = rel(2)),
+           strip.text.x = element_text(size = rel(2)),
+           plot.title = element_text(size = rel(2)))
+figa31b = g+b+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_y_continuous(expand = c(0,0),limits = c(0, 25))
+# ggsave(file = "figa31b.png", plot = figa31b, units = "in", width = 11.69, height = 8.27)
+
+
+
+
+colnames(trawl_length)
+trawl_length = trawl_length %>% dplyr::gather(key = size_class, value = extention_number, )
+
+colnames(trawl_length) = c("NS", "station_code", "depth", "catch_number", "")
