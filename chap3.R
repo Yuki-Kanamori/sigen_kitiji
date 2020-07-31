@@ -299,7 +299,7 @@ unique(number_at_depth$depth)
 number_at_depth$depth2 = factor(number_at_depth$depth, levels = c("150", "250", "350", "450", "550", "650", "750", "900"))
 
 g = ggplot(number_at_depth, aes(x = depth2, y = total/1000))
-b = geom_bar(stat = "identity", width = 1, colour = "black")
+b = geom_bar(stat = "identity", width = 1, colour = "grey50")
 lab = labs(x = "水深（m）", y = "資源尾数 (千尾)", title = "(B)")
 f = facet_wrap(~ station_code, ncol = 2)
 th = theme(panel.grid.major = element_blank(),
@@ -317,8 +317,29 @@ figa31b = g+b+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_y_continuo
 
 
 
-trawl_length2 = trawl_length[, c(6,10,11,14, 16:ncol(trawl_length))]
+trawl_length2 = trawl_length[, c(6,16:ncol(trawl_length))]
 colnames(trawl_length2)
-trawl_length = trawl_length %>% dplyr::gather(key = size_class, value = extention_number, )
+trawl_length2 = trawl_length2 %>% tidyr::gather(key = temp, value = extention_number, 2:ncol(trawl_length2)) 
+trawl_length2 = trawl_length2 %>% mutate(size_class = as.numeric(str_sub(trawl_length2$temp, 2, 4)))
+summary(trawl_length2)
+colnames(trawl_length2)[1] = "NS"
+trawl_length2$NS2 = ifelse(trawl_length2$NS == "N", "北部", "南部")
+trawl_length2$NS2 = factor(trawl_length2$NS2, levels = c("北部", "南部"))
 
-colnames(trawl_length) = c("NS", "station_code", "depth", "catch_number", "")
+g = ggplot(trawl_length2, aes(x = size_class, y = extention_number/1000, fill = NS2))
+b = geom_bar(stat = "identity", width = 0.8, colour = "black", position = "dodge")
+lab = labs(x = "体長（cm）", y = "資源尾数 (千尾)", title = "(C)")
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.5), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
+           legend.title = element_blank(),
+           legend.text = element_text(size = rel(2)),
+           strip.text.x = element_text(size = rel(2)),
+           plot.title = element_text(size = rel(2)),
+           legend.position = c(0.1, 0.8),
+           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+c = scale_fill_manual(values =  c("black", "white"))
+figa31c = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(0, 30, by = 2), expand = c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 4))
