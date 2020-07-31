@@ -302,7 +302,7 @@ number_at_depth$depth2 = factor(number_at_depth$depth, levels = c("150", "250", 
 
 g = ggplot(number_at_depth, aes(x = depth2, y = total/1000))
 b = geom_bar(stat = "identity", width = 1, colour = "grey50")
-lab = labs(x = "水深（m）", y = "資源尾数 (千尾)", title = "(B)")
+lab = labs(x = "水深（m）", y = "資源尾数 (千尾/km)", title = "(B)")
 f = facet_wrap(~ station_code, ncol = 2)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
@@ -316,7 +316,7 @@ th = theme(panel.grid.major = element_blank(),
            plot.title = element_text(size = rel(2)))
 figa31b = g+b+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_y_continuous(expand = c(0,0),limits = c(0, 25))
 # ggsave(file = "figa31b.png", plot = figa31b, units = "in", width = 11.69, height = 8.27)
-
+# bquote('Assimilation ('*mu~ 'mol' ~CO[2]~ m^-2~s^-1*')')
 
 
 trawl_length2 = trawl_length[, c(6,16:ncol(trawl_length))]
