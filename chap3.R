@@ -350,3 +350,49 @@ figa31c = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuo
 
 figa31 = grid.arrange(figa31b, figa31c, ncol = 1)
 ggsave(file = "figa31.png", plot = figa31, units = "in", width = 11.69, height = 8.27)
+
+
+
+
+
+lonlat = read.csv("lonlat2019.csv", fileEncoding = "CP932")
+lonlat = lonlat[, c(2,3,9:12)]
+colnames(lonlat)
+colnames(lonlat) = c("station_code", "depth", "lat1", "lat2", "lon1", "lon2")
+summary(lonlat)
+lonlat = lonlat %>% mutate(lat = lat1+round(lat2)/100, lon = lon1+round(lon2)/100, tag = paste0(station_code, depth))
+lonlat = ddply(lonlat, .(tag), summarize, m_lon = mean(lon), m_lat = mean(lat))
+
+
+trawl_length = read.csv("trawl_ns_length2.csv", fileEncoding = "CP932")
+trawl_length3 = trawl_length[, c(10,11)]
+
+colnames(trawl_length3)
+colnames(trawl_length3) = c("station_code", "depth")
+summary(trawl_length3)
+trawl_length3 = trawl_length3 %>% mutate(tag = paste0(station_code, depth))
+
+trawl_length3 = left_join(trawl_length3, lonlat, by = "tag") %>% distinct(tag, .keep_all = TRUE)
+
+
+
+### map
+tohoku <- data.frame(read.csv("marmap_coord.csv"))
+colnames(tohoku) <- c("long","lat","depth")
+check = tohoku[tohoku$depth<0 & tohoku$depth>=-1300,]
+summary(check)
+
+japan <- map_data("japan")
+japan2 <- japan
+japan2$long <- japan$long-0.01
+
+g <- ggplot(subset(tohoku[tohoku$depth<0 & tohoku$depth>=-1300,]),aes(long, lat))
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_blank(),
+           axis.text.y = element_blank(),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           strip.text = element_text(size = rel(1.3)),
+           legend.title = element_text(size = 13))
+g + geom_polygon(data = japan2, group = japan$group, fill= "gray50", colour= "gray50")  + coord_map(xlim = c(140, 145), ylim = c(34, 45)) + stat_contour(aes(z=depth),binwidth=200,colour="black")+theme_bw()+th+geom_point(data = trawl_length3, aes(x = m_lon, y = m_lat, shape = station_code), size = 3)
