@@ -302,7 +302,7 @@ number_at_depth$depth2 = factor(number_at_depth$depth, levels = c("150", "250", 
 
 g = ggplot(number_at_depth, aes(x = depth2, y = total/1000))
 b = geom_bar(stat = "identity", width = 1, colour = "grey50")
-lab = labs(x = "水深（m）", y = "資源尾数 (千尾/km)", title = "(B)")
+lab = labs(x = "水深（m）", y = "資源密度", title = "(B)")
 f = facet_wrap(~ station_code, ncol = 2)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
@@ -317,6 +317,11 @@ th = theme(panel.grid.major = element_blank(),
 figa31b = g+b+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_y_continuous(expand = c(0,0),limits = c(0, 25))
 # ggsave(file = "figa31b.png", plot = figa31b, units = "in", width = 11.69, height = 8.27)
 # bquote('Assimilation ('*mu~ 'mol' ~CO[2]~ m^-2~s^-1*')')
+ggsave(file = "figA31B.png", plot = figa31b, units = "in", width = 8.27, height = 11.69)
+ggsave(file = "figA31B_2.png", plot = figa31b, units = "in", width = 11.69, height = 8.27)
+
+
+
 
 
 trawl_length2 = trawl_length[, c(6,16:ncol(trawl_length))]
@@ -348,8 +353,7 @@ th = theme(panel.grid.major = element_blank(),
 c = scale_fill_manual(values =  c("black", "white"))
 figa31c = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(0, 30, by = 2), expand = c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 25))
 
-figa31 = grid.arrange(figa31b, figa31c, ncol = 1)
-ggsave(file = "figa31.png", plot = figa31, units = "in", width = 11.69, height = 8.27)
+ggsave(file = "figA31C.png", plot = figa31c, units = "in", width = 11.69, height = 8.27)
 
 
 
@@ -360,21 +364,25 @@ lonlat = lonlat[, c(2,3,4,9:12)]
 colnames(lonlat)
 colnames(lonlat) = c("station_code", "depth", "ami", "lat1", "lat2", "lon1", "lon2")
 summary(lonlat)
-lonlat = lonlat %>% mutate(lat = lat1+round(lat2)/100, lon = lon1+round(lon2)/100, tag = paste0(station_code, depth)) %>% filter(ami == 1)
+lonlat = lonlat %>% mutate(lat = lat1+round(lat2)/100, lon = lon1+round(lon2)/100, tag = paste0(station_code, depth, "_", ami))
+# %>% filter(ami == 1)
 # lonlat = ddply(lonlat, .(tag), summarize, m_lon = mean(lon), m_lat = mean(lat))
 
 
 trawl_length = read.csv("trawl_ns_length2.csv", fileEncoding = "CP932")
-trawl_length3 = trawl_length[, c(10,11)]
+trawl_length3 = trawl_length[, c(10,11,12)]
 
 colnames(trawl_length3)
-colnames(trawl_length3) = c("station_code", "depth")
+colnames(trawl_length3) = c("station_code", "depth", "ami")
 summary(trawl_length3)
-trawl_length3 = trawl_length3 %>% mutate(tag = paste0(station_code, depth))
-length()
+trawl_length3 = trawl_length3 %>% mutate(tag = paste0(station_code, depth, "_", ami))
+
+length(unique(lonlat$tag))
+length(unique(trawl_length3$tag))
 
 trawl_length3 = left_join(trawl_length3, lonlat %>% select(-station_code, -depth), by = "tag") %>% distinct(tag, .keep_all = TRUE)
 levels(trawl_length3$station_code)
+summary(trawl_length3)
 
 
 ### map
@@ -390,12 +398,29 @@ japan2$long <- japan$long-0.01
 g <- ggplot(subset(tohoku[tohoku$depth<0 & tohoku$depth>=-1300,]),aes(long, lat))
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_blank(),
-           axis.text.y = element_blank(),
-           axis.title.x = element_text(size = rel(1.5)),
-           axis.title.y = element_text(size = rel(1.5)),
-           strip.text = element_text(size = rel(1.3)),
-           legend.title = element_text(size = 13))
-g + geom_polygon(data = japan2, group = japan$group, fill= "gray50", colour= "gray50")  + coord_map(xlim = c(140, 143), ylim = c(36, 42)) + stat_contour(aes(z=depth),binwidth=200,colour="black")+theme_bw()+th+geom_point(data = trawl_length3, aes(x = lon, y = lat, shape = station_code), size = 3)+scale_shape_manual(values = c(16, 4, 17, 15, 18, 8, 1, 2))
-summary(trawl_length3)
-length(unique(trawl_length3$tag))
+           axis.text.x = element_text(size = rel(1), angle = 90),
+           axis.text.y = element_text(size = rel(1)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
+           strip.text.x = element_text(size = rel(2)),
+           plot.title = element_text(size = rel(1.5)))
+# th = theme(panel.grid.major = element_blank(),
+#            panel.grid.minor = element_blank(),
+#            axis.text.x = element_blank(),
+#            axis.text.y = element_blank(),
+#            axis.title.x = element_text(size = rel(1.5)),
+#            axis.title.y = element_text(size = rel(1.5)),
+#            strip.text = element_text(size = rel(1.3)),
+#            legend.title = element_text(size = 13))
+figa31a = g + geom_polygon(data = japan2, group = japan$group, fill= "gray50", colour= "gray50")  + coord_map(xlim = c(140.5, 143), ylim = c(36, 42)) + stat_contour(aes(z=depth),binwidth=200,colour="black")+theme_bw(base_family = "HiraKakuPro-W3")+th+geom_point(data = trawl_length3, aes(x = lon, y = lat, shape = station_code), size = 3)+scale_shape_manual(values = c(15, 4, 17, 8, 18, 16, 1, 2))+labs(title = "(A)", x = "経度", y = "緯度", shape = "調査ライン")
+ggsave(file = "figA31A.png", plot = figa31a, units = "in", width = 8.27, height = 11.69)
+
+
+layout1 <- rbind(c(1, 2),
+                 c(3, 3))
+
+figa31 = grid.arrange(figa31a,figa31b, figa31c, layout_matrix = layout1)
+ggsave(file = "figa31.png", plot = figa31, units = "in", width = 11.69, height = 8.27)
+
+
+# +scale_shape_manual(values = c(22, 4, 24, 8, 23, 22, 1, 2)) + scale_fill_manual(values = c("gray70", NA, "gray70", NA, "gray70", "gray70", NA, NA))
