@@ -209,11 +209,15 @@ yatyo = yatyo %>% dplyr::rename(ymd = 調査年月日, meigara = 銘柄, n_hako 
   mutate(year = as.numeric(str_sub(ymd, 1, 4)), month = as.numeric(str_sub(ymd, 6, 7)), gyokaku_kg = n_hako*7, gyokaku_n = meigara*n_hako) %>% 
   mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"), tag = paste(ymd, meigara, sep = '_')) %>% na.omit()
 yatyo = yatyo %>% mutate(day = ifelse(yatyo$month/1 < 10, as.numeric(str_sub(yatyo$ymd, 8, 9)), as.numeric(str_sub(yatyo$ymd, 9, 10))))
+summary(yatyo)
 
 sokutei_n = yatyo %>% group_by(ymd, meigara) %>% dplyr::summarize(sokutei_n = n())
-yatyo = left_join(yatyo, sokutei_n, by = c("ymd", "meigara")) %>% mutate(yatyo, rate = gyokaku_n/sokutei_n)
+summary(sokutei_n)
 
-tag_rate = yatyo %>% select(tag, rate) %>% distinct(.keep_all = T)
+yatyo = left_join(yatyo, sokutei_n, by = c("ymd", "meigara")) %>% mutate(yatyo, rate = gyokaku_n/sokutei_n)
+summary(yatyo)
+
+tag_rate = yatyo %>% select(tag, rate) %>% distinct(.keep_all = T) # tag = paste(ymd, meigara, sep = '_')
 
 set.seed(1)
 rand = runif(nrow(yatyo)*100) %>% matrix(ncol = 100)
@@ -226,13 +230,31 @@ ncol(loop)
 nrow(loop)
 loop = loop[, -1] %>% as.data.frame() %>% mutate(year = yatyo$year, tag = yatyo$tag) %>% gather(key = times, value = taityo, 1:100)
 loop2 = loop %>% group_by(year, tag, times, taityo) %>% dplyr::summarize(count = n())
-m_sosei = loop2 %>% group_by(year, taityo, tag) %>% dplyr::summarize(mean = round2(mean(count), 0))
+summary(loop2)
+
+loop2 = left_join(loop2, tag_rate, by = "tag") %>% mutate(number = count*rate, month = as.numeric(str_sub(tag, 6, 7))) %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"))
+summary(loop2)
+
+m_sosei = loop2 %>% group_by(year, times, taityo, season) %>% dplyr::summarize(sum = sum(number))
 summary(m_sosei)
-m_sosei2 = left_join(m_sosei, tag_rate, by = 'tag')
-total_sosei = m_sosei2 %>% mutate(total_n = mean*rate, month = as.numeric(str_sub(tag, 6, 7))) %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"))
+
+total_sosei = m_sosei %>% group_by(year, taityo, season) %>% dplyr::summarize(mean = round2(mean(sum), 0))
+summary(total_sosei)
+
+# m_sosei = loop2 %>% group_by(year, taityo, season, times) %>% dplyr::summarize(mean = mean(number))
+# summary(m_sosei)
+# 
+# total_sosei = loop2 %>% group_by(year, taityo, season) %>% dplyr::summarize(mean = round2(mean(number), 0))
+# 
+# 
+# m_sosei = loop2 %>% group_by(year, taityo, tag) %>% dplyr::summarize(mean = round2(mean(count), 0))
+# summary(m_sosei)
+# m_sosei2 = left_join(m_sosei, tag_rate, by = 'tag')
+# total_sosei = m_sosei2 %>% mutate(total_n = mean*rate, month = as.numeric(str_sub(tag, 6, 7))) %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"))
+# summary(total_sosei)
 
 # figures
-g = ggplot(total_sosei, aes(x = taityo, y = total_n), stat = "identity")
+g = ggplot(total_sosei, aes(x = taityo, y = mean), stat = "identity")
 b = geom_bar(stat = "identity")
 f = facet_wrap(~ season, ncol = 1, scales = 'free')
 labs = labs(x = "Length", y = "Numbers", title = "Kichiji")
@@ -246,6 +268,9 @@ kokiti = tai_miya2 %>% mutate(species = 'kokiti')
 head(kokiti)
 miyagi = rbind(kiti, kokiti)
 summary(miyagi)
+
+summary(kiti)
+summary(kokiti)
 
 # 組成重量
 sum_miya = miyagi %>% group_by(year, season, species) %>% dplyr::summarize(sum = sum(total_weight_kg))
