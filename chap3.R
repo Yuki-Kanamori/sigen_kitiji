@@ -238,7 +238,7 @@ summary(loop2)
 m_sosei = loop2 %>% group_by(year, times, taityo, season) %>% dplyr::summarize(sum = sum(number))
 summary(m_sosei)
 
-total_sosei = m_sosei %>% group_by(year, taityo, season) %>% dplyr::summarize(mean = round2(mean(sum), 0))
+total_sosei = m_sosei %>% group_by(year, taityo, season) %>% dplyr::summarize(total_n = round2(mean(sum), 0))
 summary(total_sosei)
 
 # m_sosei = loop2 %>% group_by(year, taityo, season, times) %>% dplyr::summarize(mean = mean(number))
@@ -254,7 +254,7 @@ summary(total_sosei)
 # summary(total_sosei)
 
 # figures
-g = ggplot(total_sosei, aes(x = taityo, y = mean), stat = "identity")
+g = ggplot(total_sosei, aes(x = taityo, y = total_n), stat = "identity")
 b = geom_bar(stat = "identity")
 f = facet_wrap(~ season, ncol = 1, scales = 'free')
 labs = labs(x = "Length", y = "Numbers", title = "Kichiji")
