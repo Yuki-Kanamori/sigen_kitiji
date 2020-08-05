@@ -179,7 +179,12 @@ for(i in 1:100){
 loop = loop[, -1] %>% as.data.frame() %>% mutate(year = tai_miya$year, season = tai_miya$season, month = tai_miya$month, do = tai_miya$do) %>% tidyr::gather(key = times, value = taityo, 1:100) %>% dplyr::rename(number = do)
 loop2 = loop %>% group_by(year, season, times, taityo) %>% dplyr::summarize(count = sum(number))
 summary(loop2)
-tai_miya2 = loop2 %>% group_by(year, season, taityo) %>% dplyr::summarize(mean = mean(count))
+round2 = function(x, d=0) {
+  p = 10^d
+  return((x * p * 2 + 1) %/% 2 / p)
+}
+tai_miya2 = loop2 %>% group_by(year, season, taityo) %>% dplyr::summarize(mean = round2(mean(count), 0))
+# round2(7.45, 0)
 
 weight = data.frame(taityo = rep(5:19)) %>% mutate(weight = 0.00000531472*((taityo+0.5)*10)^3.30527)
 tai_miya2 = left_join(tai_miya2, weight, by = "taityo") %>% mutate(total_weight_kg = (mean*weight)/1000)
