@@ -350,11 +350,23 @@ labs = labs(x = "Length", y = "Number", title = "Hachinohe")
 g+b+f+labs+theme_bw()
 
 
+# 引き延ばし
+ao = pn2 %>% filter(taityo < 100) %>% mutate(weight = 0.00001867*(taityo*10)^3.068) %>% mutate(biomass = weight*total_number)
+total_ao = ddply(ao, .(season), summarize, total = sum(biomass)/1000)
+
+catch_mae = 121650.3+204768.5
+catch_usiro = 5501.8+6326.8
+
+total_ao = total_ao %>% mutate(catch = ifelse(total_ao$season == "1-6", catch_mae, catch_usiro)) %>% mutate(rate = catch/total)
+
+ao = left_join(ao, total_ao, by = "season") %>% mutate(number = rate*total_number)
+
 
 # Tohoku area ---------------------------------------------------
-head(tai_miya2)
-head(total_sosei)
-head(pn2)
+# 宮城以南 = 福島茨城
+# 岩手以北 = 青森岩手（ただし，岩手は漁獲量を使っているだけで，体長データはない）
+head(fukuiba)
+head(ao)
 
 miya1 = ddply(tai_miya2, .(taityo), summarize, total_number = sum(mean))
 miya2 = ddply(total_sosei, .(taityo), summarize, total_number = sum(total_n))
