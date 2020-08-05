@@ -47,11 +47,11 @@ require(ggrepel)
 
 # please change here -----------------------------------------------------------
 # set working directory
-setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/森川さん由来/R01d_キチジ資源評価")
+# setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/森川さん由来/R01d_キチジ資源評価")
 
-# how many years ago
-# e.g. wanna analyze the data of 2018 and now is 2020, then n = 2
-n = 2
+# # how many years ago
+# # e.g. wanna analyze the data of 2018 and now is 2020, then n = 2
+# n = 2
 
 
 # 3-1 図4: 漁場の空間分布 --------------------------------------------------------------
@@ -415,7 +415,7 @@ lonlat = lonlat[, c(2,3,4,9:12)]
 colnames(lonlat)
 colnames(lonlat) = c("station_code", "depth", "ami", "lat1", "lat2", "lon1", "lon2")
 summary(lonlat)
-lonlat = lonlat %>% mutate(lat = lat1+round(lat2)/100, lon = lon1+round(lon2)/100, tag = paste0(station_code, depth, "_", ami))
+lonlat = lonlat %>% mutate(lat = lat1+(round(lat2)/60), lon = lon1+(round(lon2)/60), tag = paste0(station_code, depth, "_", ami))
 # %>% filter(ami == 1)
 # lonlat = ddply(lonlat, .(tag), summarize, m_lon = mean(lon), m_lat = mean(lat))
 
