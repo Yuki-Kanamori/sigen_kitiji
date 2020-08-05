@@ -316,7 +316,7 @@ summary(kg$n_iri_bisu)
 pn = NULL
 length = c(seq(50, 350, 10), 1000)
 for(i in 1:length(length)){
-  i = 21
+  # i = 21
   temp = matrix(NA, ncol = 2, nrow = length(kg$n_iri_bisu))
   for(j in 1:length(kg$n_iri_bisu)){
     temp[j, 1] = pnorm(length[i], kg$meanBL[j], kg$SD[j])
@@ -325,10 +325,19 @@ for(i in 1:length(length)){
   temp2 = (temp[,2]-temp[,1]) %>% data.frame %>% mutate(iri_bisu = kg$n_iri_bisu, gyokaku_bisu = kg$gyokaku_bisu, season = kg$season, BL = paste0(length[i+1]))
   pn = rbind(pn, temp2)
 }
-pn$number = pn$.*pn$gyokaku_bisu
+colnames(pn)
+colnames(pn)[1] = "prob"
+pn$number = pn$prob*pn$gyokaku_bisu
 pn2 = ddply(pn, .(season, BL), summarize, total_number = sum(number))
+summary(pn2)
+pn2$BL2 = as.numeric(pn2$BL)/10
 
-
+# figures
+g = ggplot(pn2 %>% na.omit() %>% filter(BL2< 100), aes(x = BL2, y = total_number), stat = "identity")
+b = geom_bar(stat = "identity")
+f = facet_wrap(~ season, ncol = 1, scales = 'free')
+labs = labs(x = "Length", y = "Number", title = "Hachinohe")
+g+b+f+labs+theme_bw()
 
 
 
