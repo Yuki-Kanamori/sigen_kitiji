@@ -247,7 +247,9 @@ head(kokiti)
 miyagi = rbind(kiti, kokiti)
 summary(miyagi)
 
+# 組成重量
 sum_miya = miyagi %>% group_by(year, season, species) %>% dplyr::summarize(sum = sum(total_weight_kg))
+# 漁獲量
 total_g_miyagi = g_miya2 %>% mutate(species = ifelse(g_miya2$size == "きちじ", 'kiti', 'kokiti')) %>% group_by(year, season, species) %>% dplyr::summarize(sum = sum(total))
 head(sum_miya)
 head(total_g_miyagi)
@@ -256,8 +258,11 @@ rate = left_join(sum_miya, total_g_miyagi, by = c('year', 'season', 'species')) 
 miyagi = left_join(miyagi, rate, by = c('year', 'season', 'species')) 
 miyagi = miyagi %>% mutate(weight2 = mean*rate) %>% mutate(pref = 'Miyagi')
 
-total = miyagi %>% group_by(year, season) %>% dplyr::summarize(total = sum(weight2)) %>% mutate(pref = "miyagi") %>% as.data.frame()
-head(total)
+#漁獲量合計（宮城）
+# total = miyagi %>% group_by(year, season) %>% dplyr::summarize(total = sum(weight2)) %>% mutate(pref = "miyagi") %>% as.data.frame()
+# head(total)
+total = total_g_miyagi %>% group_by(season) %>% dplyr::summarize(total = sum(sum))
+
 fukuiba_mae = 49117　#ここ変更の余地あり
 fukuiba_usiro = 1212 #ここ変更の余地あり
 rate_fukuiba_mae = (total %>% filter(season == '1-6') %>% select(total) + fukuiba_mae)/total %>% filter(season == '1-6') %>% select(total)
