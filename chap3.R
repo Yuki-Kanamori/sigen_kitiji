@@ -256,7 +256,7 @@ head(total_g_miyagi)
 rate = left_join(sum_miya, total_g_miyagi, by = c('year', 'season', 'species')) %>% mutate(rate = sum.y/sum.x)
 
 miyagi = left_join(miyagi, rate, by = c('year', 'season', 'species')) 
-miyagi = miyagi %>% mutate(weight2 = mean*rate) %>% mutate(pref = 'Miyagi')
+miyagi = miyagi %>% mutate(number = mean*rate) %>% mutate(pref = 'Miyagi') # weight2は引き延ばし後の尾数
 
 #漁獲量合計（宮城）
 # total = miyagi %>% group_by(year, season) %>% dplyr::summarize(total = sum(weight2)) %>% mutate(pref = "miyagi") %>% as.data.frame()
@@ -269,18 +269,21 @@ rate_fukuiba_mae = (total %>% filter(season == '1-6') %>% select(total) + fukuib
 rate_fukuiba_usiro = (total %>% filter(season == '7-12') %>% select(total) + fukuiba_usiro)/total %>% filter(season == '7-12') %>% select(total)
 
 head(miyagi)
-fukuiba = miyagi %>% group_by(year, season, taityo) %>% dplyr::summarize(sum = sum(weight2))
-fukuiba = fukuiba %>% mutate(rate = ifelse(fukuiba$season == '1-6', as.numeric(rate_fukuiba_mae), as.numeric(rate_fukuiba_usiro))) %>% mutate(weight2 = sum*rate, pref = 'South of Miyagi')
+miyagi_total =  miyagi %>% group_by(year, season, taityo) %>% dplyr::summarize(sum = sum(number))
+fukuiba = miyagi_total %>% mutate(rate = ifelse(fukuiba$season == '1-6', as.numeric(rate_fukuiba_mae), as.numeric(rate_fukuiba_usiro))) %>% mutate(number = sum*rate, pref = 'South of Miyagi')
+  
 head(fukuiba)
 head(miyagi)
+summary(miyagi)
+summary(fukuiba)
 
-fig = rbind(miyagi %>% select(year, season, taityo, weight2, pref), fukuiba %>% select(year, season, taityo, weight2, pref))
+fig = rbind(miyagi %>% select(year, season, taityo, number, pref), fukuiba %>% select(year, season, taityo, number, pref))
 
 # figures
-g = ggplot(fig, aes(x = taityo, y = weight2), stat = "identity")
+g = ggplot(fig, aes(x = taityo, y = number), stat = "identity")
 b = geom_bar(stat = "identity")
 f = facet_wrap(~ pref, ncol = 1, scales = 'free')
-labs = labs(x = "Length", y = "Weight", title = "Length composition in 2018")
+labs = labs(x = "Length", y = "Number", title = "Length composition in 2019")
 g+b+f+labs+theme_bw()
 
 
@@ -367,16 +370,20 @@ ao = left_join(ao, total_ao, by = "season") %>% mutate(number = rate*total_numbe
 # 岩手以北 = 青森岩手（ただし，岩手は漁獲量を使っているだけで，体長データはない）
 head(fukuiba)
 head(ao)
+summary(ao)
+summary(fukuiba)
 
-miya1 = ddply(tai_miya2, .(taityo), summarize, total_number = sum(mean))
-miya2 = ddply(total_sosei, .(taityo), summarize, total_number = sum(total_n))
-aomori = ddply(pn2 %>% filter(taityo < 100), .(taityo), summarize, total_number = sum(total_number))
+# miya1 = ddply(tai_miya2, .(taityo), summarize, total_number = sum(mean))
+# miya2 = ddply(total_sosei, .(taityo), summarize, total_number = sum(total_n))
+# aomori = ddply(pn2 %>% filter(taityo < 100), .(taityo), summarize, total_number = sum(total_number))
+# tohoku = rbind(miya1, miya2) %>% mutate(area = "宮城県以南")
+# tohoku = rbind(tohoku, aomori %>% mutate(area = "岩手県以北"))
 
-tohoku = rbind(miya1, miya2) %>% mutate(area = "宮城県以南")
-tohoku = rbind(tohoku, aomori %>% mutate(area = "岩手県以北"))
+fukuiba2 = ddply(fukuiba, .(taityo), summarize, total_number = sum(sum))
+ao2 = ddply(ao, .(taityo), summarize, total_number = sum(total_number))
+tohoku = rbind(fukuiba2 %>% mutate(area = "宮城県以南"), ao2 %>% mutate(area = "岩手県以北"))
 
 tohoku = ddply(tohoku, .(area, taityo), summarize, total_number = sum(total_number))
-
 
 unique(tohoku$area)
 levels(tohoku$area) 
@@ -399,7 +406,8 @@ th = theme(panel.grid.major = element_blank(),
            strip.text.x = element_text(size = rel(1.5)),
            legend.position = c(0.85, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
-fig9 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0), breaks=seq(2, 36, by = 2))+scale_y_continuous(expand = c(0,0),limits = c(0, 9))
+fig9 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th
++scale_x_continuous(expand = c(0,0), breaks=seq(2, 36, by = 2))+scale_y_continuous(expand = c(0,0),limits = c(0, 9))
 ggsave(file = "fig9.png", plot = fig9, units = "in", width = 11.69, height = 8.27)
 
 
