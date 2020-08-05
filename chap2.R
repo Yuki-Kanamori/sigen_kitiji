@@ -289,7 +289,7 @@ iba_sum = iba_sum %>% select(-method) %>% dplyr::group_by(method2) %>% dplyr::su
 merge = ao_sum %>% dplyr::full_join(iwa_sum, by = "method2") %>% dplyr::full_join(miya_sum, by = "method2") %>% dplyr::full_join(fuku_sum, by = "method2") %>% dplyr::full_join(iba_sum, by = "method2")
 colnames(merge) = c("漁業種", "青森", "岩手", "宮城", "福島", "茨城")
 merge[is.na(merge)] = 0
-write.csv(merge, "merge.csv")
+write.csv(merge, "merge.csv", fileEncoding = "CP932")
 
 
 
@@ -389,6 +389,7 @@ okisoko2 = okisoko %>% mutate(method = ifelse(漁法 == 102, "2そう曳き", if
   mutate(pref = ifelse(県コード == 13, "青森", ifelse(県コード == 14, "岩手", ifelse(県コード == 15, "宮城", ifelse(県コード == 18, "茨城", "福島"))))) %>% select(漁区名, method, pref, 漁獲量の合計, 網数の合計) %>% filter(漁区名 != "襟裳西")
 summary(okisoko2$漁区名)
 summary(okisoko2)
+
 cpue = ddply(okisoko2, .(method), summarize, effort = sum(網数の合計), catch = sum(漁獲量の合計))
 cpue$year = 2019
 
@@ -406,6 +407,11 @@ unique(cpue2$label)
 levels(cpue2$label)
 cpue2$label = factor(cpue2$label, levels = c("尻屋崎〜岩手沖のかけ廻し", "岩手沖の2そう曳き", "金華山~房総のトロール"))
 
+
+
+table4 = ddply(okisoko2, .(method,漁区名), summarize, effort = sum(網数の合計), catch = sum(漁獲量の合計))
+table4$cpue = table4$catch/table4$effort
+table4
 
 ### かけ廻し
 g = ggplot(cpue2 %>% filter(method == "かけ廻し"), aes(x = year, y = cpue, shape = label, fill = label))
