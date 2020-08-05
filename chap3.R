@@ -388,7 +388,7 @@ catch_usiro = 5501.8+6326.8
 total_ao = total_ao %>% mutate(catch = ifelse(total_ao$season == "1-6", catch_mae, catch_usiro)) %>% mutate(rate = catch/total)
 
 ao = left_join(ao, total_ao, by = "season") %>% mutate(number = rate*total_number)
-
+summary(ao)
 
 # Tohoku area ---------------------------------------------------
 # 宮城以南 = 福島茨城
