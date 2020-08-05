@@ -330,10 +330,10 @@ colnames(pn)[1] = "prob"
 pn$number = pn$prob*pn$gyokaku_bisu
 pn2 = ddply(pn, .(season, BL), summarize, total_number = sum(number))
 summary(pn2)
-pn2$BL2 = as.numeric(pn2$BL)/10
+pn2$taityo = as.numeric(pn2$BL)/10
 
 # figures
-g = ggplot(pn2 %>% na.omit() %>% filter(BL2< 100), aes(x = BL2, y = total_number), stat = "identity")
+g = ggplot(pn2 %>% na.omit() %>% filter(taityo< 100), aes(x = taityo, y = total_number), stat = "identity")
 b = geom_bar(stat = "identity")
 f = facet_wrap(~ season, ncol = 1, scales = 'free')
 labs = labs(x = "Length", y = "Number", title = "Hachinohe")
@@ -341,7 +341,44 @@ g+b+f+labs+theme_bw()
 
 
 
+# Tohoku area ---------------------------------------------------
+head(tai_miya2)
+head(total_sosei)
+head(pn2)
 
+miya1 = ddply(tai_miya2, .(taityo), summarize, total_number = sum(mean))
+miya2 = ddply(total_sosei, .(taityo), summarize, total_number = sum(total_n))
+aomori = ddply(pn2 %>% filter(taityo < 100), .(taityo), summarize, total_number = sum(total_number))
+
+tohoku = rbind(miya1, miya2) %>% mutate(area = "宮城県以南")
+tohoku = rbind(tohoku, aomori %>% mutate(area = "岩手県以北"))
+
+tohoku = ddply(tohoku, .(area, taityo), summarize, total_number = sum(total_number))
+
+
+unique(tohoku$area)
+levels(tohoku$area) 
+tohoku$area = factor(tohoku$area, levels = c("岩手県以北", "宮城県以南"))
+summary(tohoku)
+
+g = ggplot(tohoku, aes(x = taityo, y = total_number/10000, fill = area))
+b = geom_bar(stat = "identity", width = 0.5, colour = "black")
+lab = labs(x = "体長（cm）", y = "漁獲尾数 (万尾)", fill = "")
+col_catch = c("white", "grey0")
+c = scale_fill_manual(values = col_catch)
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.2), angle = 90),
+           axis.text.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_blank(),
+           legend.text = element_text(size = rel(1.2)),
+           strip.text.x = element_text(size = rel(1.5)),
+           legend.position = c(0.85, 0.8),
+           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
+fig9 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0), breaks=seq(2, 36, by = 2))+scale_y_continuous(expand = c(0,0),limits = c(0, 9))
+ggsave(file = "fig9.png", plot = fig9, units = "in", width = 11.69, height = 8.27)
 
 
 
