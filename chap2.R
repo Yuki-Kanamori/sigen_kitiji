@@ -479,7 +479,10 @@ th = theme(panel.grid.major = element_blank(),
 w = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 2), expand=c(0, 0.5))+scale_y_continuous(limits = c(0, 3))
 
 fig8 = grid.arrange(kake, niso, tra, w, ncol = 1)
-ggsave(file = "fig8.png", plot = fig8, units = "in", width = 11.69, height = 8.27)
+ggsave(file = "fig8.png", plot = fig8, units = "in", width = 8.27, height = 11.69)
+
+fig8 = grid.arrange(kake, niso, tra, w, ncol = 2)
+ggsave(file = "fig8-2.png", plot = fig8, units = "in", width = 11.69, height = 8.27)
 
 
 
