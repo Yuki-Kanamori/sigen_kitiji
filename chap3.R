@@ -348,8 +348,75 @@ pn2 = ddply(pn, .(season, BL), summarize, total_number = sum(number))
 summary(pn2)
 pn2$taityo = as.numeric(pn2$BL)/10 # with message "about "get NA"
 
+
+
+# pとs
+ps = read.csv("seimitu.csv", fileEncoding = "CP932") %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"), tag = paste(taityo, meigara, month, total_number_in_box, sep = "_"), tag_box = paste(month, total_number_in_box,meigara,  sep = "_"), taityo2 = taityo%/%10)
+
+unique(ps$tag_box)
+
+comp_ps = ps %>% group_by(season, taityo2, meigara) %>% dplyr::summarize(count = n())
+(n_total = ddply(comp_ps, .(season, meigara), summarize, n_total = sum(count)))
+n_total = n_total %>% mutate(n_box = c(3, 2)) %>% mutate(n_iri_bisu = n_total/n_box)
+
+(stat_ps = ddply(ps, .(season, meigara), summarize, meanBL = mean(taityo), SD = sd(taityo)))
+
+comp_ps = left_join(comp_ps, n_total, by = c("season", "meigara"))
+comp_ps = comp_ps %>% mutate(freq = count/n_total) %>% arrange(taityo2)
+
+# freq = comp_ps$freq
+# length = c(seq(50, 350, 10), 1000)
+# data = comp_ps %>% select(season, taityo2, freq) %>% mutate(taityo = taityo2*10) 
+# data = full_join(data, data_frame(taityo = c(seq(50, 350, 10), 1000))) %>% arrange()
+
+
+# 
+# temp = matrix(0, ncol = 1, nrow = (length(unique(comp_ps$taityo2)))*2*2+1)
+# temp = NULL
+# for(i in 1:length(unique(comp_ps$season))){
+#   i = 1
+#   s = unique(comp_ps$season)[i]
+#   data = comp_ps %>% filter(season == s)
+#   for(j in 1:length(unique(data$meigara))){
+#     j = 1
+#     d = unique(data$meigara)[j]
+#     data2 = data %>% filter(meigara == d)
+#     for(k in 1:nrow(data)){
+#       temp[k] = data2$freq[k] + temp[k-1]
+#     }
+#   }
+# }
+
+data_p = comp_ps %>% filter(meigara == "P") %>% arrange(taityo2)
+temp_p = matrix(0, ncol = 1, nrow = nrow(data_p))
+for(k in 2:nrow(data_p)){
+  # k = 2
+  temp_p[k] = data_p$freq[k] + temp_p[k-1]
+}
+
+data_s = comp_ps %>% filter(meigara == "S") %>% arrange(taityo2)
+temp_s = matrix(0, ncol = 1, nrow = nrow(data_s))
+for(k in 2:nrow(data_s)){
+  # k = 2
+  temp_s[k] = data_s$freq[k] + temp_s[k-1]
+}
+
+(stat_ps = ddply(ps, .(season, meigara), summarize, meanBL = mean(taityo), SD = sd(taityo)))
+unique(comp_ps$n_iribisu)
+temp1 = data_frame(freq2 = temp_p, taityo2 = data_p$taityo2, meigara = "P", season = "1-6")
+temp2 = data_frame(freq2 = temp_s, taityo2 = data_s$taityo2, meigara = "S", season = "1-6")
+temp = rbind(temp1, temp2)
+comp_ps = full_join(comp_ps, temp, by = c("taityo2", "season", "meigara")) %>% mutate(n_catch = n_iri_bisu*n_box) %>% mutate(total_number = freq2*n_catch)
+
+head(comp_ps)
+head(pn2)
+
+sokutei = data_frame(season = comp_ps$season, taityo = comp_ps$taityo2*10, total_number = comp_ps$total_number) %>% mutate(BL = taityo*10)
+
+all_ao = rbind(pn2, sokutei)
+
 # figures
-g = ggplot(pn2 %>% na.omit() %>% filter(taityo < 50), aes(x = taityo, y = total_number), stat = "identity")
+g = ggplot(all_ao %>% na.omit() %>% filter(taityo < 50), aes(x = taityo, y = total_number), stat = "identity")
 b = geom_bar(stat = "identity")
 f = facet_wrap(~ season, ncol = 1, scales = 'free')
 labs = labs(x = "Length", y = "Number", title = "Hachinohe")
@@ -357,7 +424,7 @@ g+b+f+labs+theme_bw()
 
 
 # 引き延ばし
-ao = pn2 %>% filter(taityo < 100) %>% mutate(weight = 0.00001867*(taityo*10)^3.068) %>% mutate(biomass = weight*total_number)
+ao = all_ao %>% filter(taityo < 100) %>% mutate(weight = 0.00001867*(taityo*10)^3.068) %>% mutate(biomass = weight*total_number)
 total_ao = ddply(ao, .(season), summarize, total = sum(biomass)/1000)
 
 (ddply(tai_hati, .(season), summarize, sum = sum(kg)))
