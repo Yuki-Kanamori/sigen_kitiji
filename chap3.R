@@ -332,9 +332,12 @@ a = 473.69
 b = -0.2583
 cv = 0.0448
 
-kg = tai_hati %>% group_by(year, season, iri_bisu) %>% dplyr::summarize(sum = sum(kg)) %>% filter(iri_bisu != "S") %>% filter(iri_bisu != "P") %>% mutate(n_iri_bisu = as.numeric(iri_bisu)) %>% na.omit() %>% mutate(hako = sum/7, gyokaku_bisu = hako*n_iri_bisu) %>% filter(n_iri_bisu > 1) %>% mutate(meanBL = a*n_iri_bisu^b) %>% mutate(SD = meanBL*cv)
+# PとS以外
+kg = tai_hati %>% group_by(year, season, iri_bisu) %>% dplyr::summarize(sum = sum(kg)) %>% filter(iri_bisu != "S") %>% filter(iri_bisu != "P") %>% mutate(n_iri_bisu = as.numeric(iri_bisu)) %>% filter(n_iri_bisu > 1) %>% na.omit() %>% mutate(hako = sum/7, gyokaku_bisu = hako*n_iri_bisu) %>% mutate(meanBL = a*n_iri_bisu^b) %>% mutate(SD = meanBL*cv)
 unique(kg$iri_bisu)
 summary(kg$n_iri_bisu)
+summary(kg)
+
 
 # pn = NULL
 # length = c(seq(50, 350, 10), 1000)
@@ -354,7 +357,7 @@ summary(kg$n_iri_bisu)
 pn = NULL
 length = c(seq(50, 350, 10), 1000)
 for(i in 1:length(length)){
-  # i = 21
+  #i = 21
   temp = matrix(NA, ncol = 2, nrow = length(kg$n_iri_bisu))
   for(j in 1:length(kg$n_iri_bisu)){
     temp[j, 1] = pnorm(length[i], kg$meanBL[j], kg$SD[j])
@@ -363,12 +366,24 @@ for(i in 1:length(length)){
   temp2 = (temp[,2]-temp[,1]) %>% data.frame %>% mutate(iri_bisu = kg$n_iri_bisu, gyokaku_bisu = kg$gyokaku_bisu, season = kg$season, BL = paste0(length[i+1]))
   pn = rbind(pn, temp2)
 }
+summary(pn)
+
 colnames(pn)
 colnames(pn)[1] = "prob"
 pn$number = pn$prob*pn$gyokaku_bisu
+summary(pn)
+
 pn2 = ddply(pn, .(season, BL), summarize, total_number = sum(number))
 summary(pn2)
 pn2$taityo = as.numeric(pn2$BL)/10
+
+
+
+# PとS
+ps = data.frame(iribisu = rep(c("P", "S"), each = 2), season = c("1-6", "7-12", "1-6", "7-12"), n_iribisu = rep(1001:1002))
+
+
+
 
 # figures
 g = ggplot(pn2 %>% na.omit() %>% filter(taityo< 100), aes(x = taityo, y = total_number), stat = "identity")
