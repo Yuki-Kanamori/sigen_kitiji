@@ -147,11 +147,12 @@ ggsave(file = "fig4.png", plot = fig4, units = "in", width = 8.27, height = 11.6
 
 
 # # 3-2  図9; 漁獲物の体長組成  ------------------------------------------
-setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/森川さん由来/R01d_キチジ資源評価/R01d_キチジVPA")
-
+# set working directory -----------------------------------------------------------
+# please change here
+setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/SA2020")
 
 # (1-B) きちじとこきちじの漁獲量---------------------------------------------------------
-g_miya = read.csv("漁獲量_宮城.csv", fileEncoding = "CP932")
+g_miya = read.csv("catch_miyagi.csv", fileEncoding = "CP932")
 summary(g_miya)
 g_miya = g_miya %>% mutate(ymd = as.Date(g_miya$年月日, format = "%Y/%m/%d")) %>% 
   dplyr::rename(mizuage = 日別水揚量, size = 魚種コード) %>% select(ymd, size, mizuage) %>% 
@@ -159,10 +160,8 @@ g_miya = g_miya %>% mutate(ymd = as.Date(g_miya$年月日, format = "%Y/%m/%d"))
   mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"))
 g_miya2 = ddply(g_miya, .(size, year, month, season), summarize, total = sum(mizuage))
 
-
 # (1-C) こきちじの体長組成---------------------------------------------------------
-tai_miya = read.xlsx("02_キチジ宮城体長組成明細2018.xlsx", 1)
-tai_miya = tai_miya[, 1:26] 
+tai_miya = read.csv("taityo_miyagi.csv", fileEncoding = "CP932")
 summary(tai_miya)
 tai_miya = tai_miya %>% filter(銘柄コード == 91) # 別の種や体長組成の算出に不必要なデータが入っている場合があるため，ここで念のためフィルターをかける
 tai_miya = tai_miya %>% dplyr::rename(ymd = 漁獲年月日, start = 開始の階級値, do = 度数) %>% select(ymd, start, do) %>% mutate(year = as.numeric(str_sub(ymd, 1, 4)), month = as.numeric(str_sub(ymd,5, 6)), day = as.numeric(str_sub(ymd, 7, 8))) %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"))
@@ -199,16 +198,17 @@ g+b+f+labs+theme_bw()
 
 
 # (1-D) きちじの体長組成---------------------------------------------------------
-yatyo = read.csv("宮城_野帳.csv", fileEncoding = "CP932")
+yatyo = read.csv("yatyo_miyagi.csv", fileEncoding = "CP932")
+# yatyo = read.xlsx("箱入れキチジ体長.xlsx", sheet = "2019")
 head(yatyo)
 summary(yatyo)
-# 28*171 = 4788
-# na.omit -> 2409
-yatyo = yatyo %>% dplyr::rename(ymd = 調査年月日, meigara = 銘柄, n_hako = 箱数) %>% 
-  tidyr::gather(key = no, value = zentyo, 4:31) %>% 
+
+yatyo = yatyo %>% dplyr::rename(ymd = 調査年月日, meigara = 銘柄, n_hako = 箱数)
+yatyo = yatyo %>% tidyr::gather(key = no, value = zentyo, 11:ncol(yatyo)) %>% 
   mutate(year = as.numeric(str_sub(ymd, 1, 4)), month = as.numeric(str_sub(ymd, 6, 7)), gyokaku_kg = n_hako*7, gyokaku_n = meigara*n_hako) %>% 
   mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"), tag = paste(ymd, meigara, sep = '_')) %>% na.omit()
 yatyo = yatyo %>% mutate(day = ifelse(yatyo$month/1 < 10, as.numeric(str_sub(yatyo$ymd, 8, 9)), as.numeric(str_sub(yatyo$ymd, 9, 10))))
+
 summary(yatyo)
 
 sokutei_n = yatyo %>% group_by(ymd, meigara) %>% dplyr::summarize(sokutei_n = n())
@@ -254,11 +254,14 @@ summary(total_sosei)
 # summary(total_sosei)
 
 # figures
-g = ggplot(total_sosei, aes(x = taityo, y = total_n), stat = "identity")
+g = ggplot(total_sosei %>% filter(taityo < 80), aes(x = taityo, y = total_n), stat = "identity")
 b = geom_bar(stat = "identity")
 f = facet_wrap(~ season, ncol = 1, scales = 'free')
 labs = labs(x = "Length", y = "Numbers", title = "Kichiji")
 g+b+f+labs+theme_bw()
+
+
+
 
 
 # (1-E) ---------------------------------------------------------
@@ -269,90 +272,70 @@ head(kokiti)
 miyagi = rbind(kiti, kokiti)
 summary(miyagi)
 
-summary(kiti)
-summary(kokiti)
-
-# 組成重量
 sum_miya = miyagi %>% group_by(year, season, species) %>% dplyr::summarize(sum = sum(total_weight_kg))
-# 漁獲量
 total_g_miyagi = g_miya2 %>% mutate(species = ifelse(g_miya2$size == "きちじ", 'kiti', 'kokiti')) %>% group_by(year, season, species) %>% dplyr::summarize(sum = sum(total))
 head(sum_miya)
 head(total_g_miyagi)
 rate = left_join(sum_miya, total_g_miyagi, by = c('year', 'season', 'species')) %>% mutate(rate = sum.y/sum.x)
 
 miyagi = left_join(miyagi, rate, by = c('year', 'season', 'species')) 
-miyagi = miyagi %>% mutate(number = mean*rate) %>% mutate(pref = 'Miyagi') # weight2は引き延ばし後の尾数
+miyagi = miyagi %>% mutate(weight2 = mean*rate) %>% mutate(pref = 'Miyagi')
 
-#漁獲量合計（宮城）
-# total = miyagi %>% group_by(year, season) %>% dplyr::summarize(total = sum(weight2)) %>% mutate(pref = "miyagi") %>% as.data.frame()
-# head(total)
-total = total_g_miyagi %>% group_by(season) %>% dplyr::summarize(total = sum(sum))
-
-fukuiba_mae = 49117　#ここ変更の余地あり
-fukuiba_usiro = 1212 #ここ変更の余地あり
+total = miyagi %>% group_by(year, season) %>% dplyr::summarize(total = sum(weight2)) %>% mutate(pref = "miyagi") %>% as.data.frame()
+head(total)
+fukuiba_mae = 4248.8+1667.1　#fuku+iba
+fukuiba_usiro = 948.5+16591.9 
 rate_fukuiba_mae = (total %>% filter(season == '1-6') %>% select(total) + fukuiba_mae)/total %>% filter(season == '1-6') %>% select(total)
 rate_fukuiba_usiro = (total %>% filter(season == '7-12') %>% select(total) + fukuiba_usiro)/total %>% filter(season == '7-12') %>% select(total)
 
 head(miyagi)
-miyagi_total =  miyagi %>% group_by(year, season, taityo) %>% dplyr::summarize(sum = sum(number))
-fukuiba = miyagi_total %>% mutate(rate = ifelse(fukuiba$season == '1-6', as.numeric(rate_fukuiba_mae), as.numeric(rate_fukuiba_usiro))) %>% mutate(number = sum*rate, pref = 'South of Miyagi')
-  
+fukuiba = miyagi %>% group_by(year, season, taityo) %>% dplyr::summarize(sum = sum(weight2))
+fukuiba = fukuiba %>% mutate(rate = ifelse(fukuiba$season == '1-6', as.numeric(rate_fukuiba_mae), as.numeric(rate_fukuiba_usiro))) %>% mutate(weight2 = sum*rate, pref = 'South of Miyagi')
 head(fukuiba)
 head(miyagi)
-summary(miyagi)
-summary(fukuiba)
 
-fig = rbind(miyagi %>% select(year, season, taityo, number, pref), fukuiba %>% select(year, season, taityo, number, pref))
+fig = rbind(miyagi %>% select(year, season, taityo, weight2, pref), fukuiba %>% select(year, season, taityo, weight2, pref))
 
 # figures
-g = ggplot(fig, aes(x = taityo, y = number), stat = "identity")
+g = ggplot(fig %>% filter(taityo < 50), aes(x = taityo, y = weight2), stat = "identity")
 b = geom_bar(stat = "identity")
 f = facet_wrap(~ pref, ncol = 1, scales = 'free')
-labs = labs(x = "Length", y = "Number", title = "Length composition in 2019")
+labs = labs(x = "Length", y = "Numbers", title = "Length composition in 2019")
 g+b+f+labs+theme_bw()
 
 
-
 # (3) 八戸 ------------------------------------------------------------------
-tai_hati = read.xlsx("04_キチジ八戸漁連2004-2018.xlsx", "みなと2018")
-head(tai_hati)
+tai_hati = read.csv("hati_sokutei.csv", fileEncoding = "CP932")
+# ファイルの規格コードが変なので，修正
+(code = data.frame(規格名 = unique(tai_hati$規格名)))
+code$CD = c(NA, 13, 27, 28, 7, 8, 7, 7, 8, 31, 68, 31, 8, NA, 7, 8, NA, 27)
+tai_hati = full_join(tai_hati, code, by = "規格名")
 summary(tai_hati)
-tai_hati = tai_hati[, c(1,2,3,5,8,9)]
-colnames(tai_hati) = c('year', 'month', 'fisheries', 'kikaku', 'irisu', 'kg')
+tai_hati[is.na(tai_hati)] = 0
+colnames(tai_hati)
 
-unique(tai_hati$kikaku)
+tai_hati = tai_hati %>% select(年, 月, 漁法名, CD, 入数, 月間数量.Ｋｇ.)
+colnames(tai_hati) = c("year", "month", "fisheries", "kikaku", "irisu", "kg")
+tai_hati$irisu = tai_hati$irisu%/%10
 
 tai_hati = tai_hati %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"), iri_bisu = ifelse(kikaku == 13, 'P', ifelse(kikaku == 7, 'S', as.numeric(str_sub(irisu, -2, -1)))))
 
 unique(tai_hati$iri_bisu)
 summary(tai_hati)
 
-
 a = 473.69
 b = -0.2583
 cv = 0.0448
 
 # PとS以外
-kg = tai_hati %>% group_by(year, season, iri_bisu) %>% dplyr::summarize(sum = sum(kg)) %>% filter(iri_bisu != "S") %>% filter(iri_bisu != "P") %>% mutate(n_iri_bisu = as.numeric(iri_bisu)) %>% filter(n_iri_bisu > 1) %>% na.omit() %>% mutate(hako = sum/7, gyokaku_bisu = hako*n_iri_bisu) %>% mutate(meanBL = a*n_iri_bisu^b) %>% mutate(SD = meanBL*cv)
+kg = tai_hati %>% group_by(year, season, iri_bisu) %>% dplyr::summarize(sum = sum(kg)) %>% filter(iri_bisu != "S") %>% filter(iri_bisu != "P") %>% mutate(n_iri_bisu = as.numeric(iri_bisu))
+summary(kg)
+
+kg = kg %>% filter(n_iri_bisu > 1) %>% na.omit() %>% mutate(hako = sum/7, gyokaku_bisu = hako*n_iri_bisu)
+kg = kg %>% mutate(meanBL = a*n_iri_bisu^b) %>% mutate(SD = meanBL*cv)
 unique(kg$iri_bisu)
 summary(kg$n_iri_bisu)
 summary(kg)
-
-
-# pn = NULL
-# length = c(seq(50, 350, 10), 1000)
-# for(i in 1:length(length)){
-#   for(j in 1:length(kg$n_iri_bisu)){
-#     temp = pnorm(length[i], kg$meanBL[j], kg$SD[j])
-#     pn = rbind(pn, temp)
-#   }
-# }
-# length(length)*length(kg$n_iri_bisu)-length(pn)
-# 
-# pn1 = pn[-((length(pn)-length(kg$n_iri_bisu)+1):length(pn))]
-# pn2 = pn[-(1:length(kg$n_iri_bisu))]
-# pn3 = cbind(pn1, pn2) %>% data.frame() 
-# pn3 = pn3 %>% mutate(sa = pn2-pn1, BL = rep(c(seq(50, 350, 10), 1000), each = length(kg$n_iri_bisu)))
 
 pn = NULL
 length = c(seq(50, 350, 10), 1000)
@@ -375,18 +358,10 @@ summary(pn)
 
 pn2 = ddply(pn, .(season, BL), summarize, total_number = sum(number))
 summary(pn2)
-pn2$taityo = as.numeric(pn2$BL)/10
-
-
-
-# PとS
-ps = data.frame(iribisu = rep(c("P", "S"), each = 2), season = c("1-6", "7-12", "1-6", "7-12"), n_iribisu = rep(1001:1002))
-
-
-
+pn2$taityo = as.numeric(pn2$BL)/10 # with message "about "get NA"
 
 # figures
-g = ggplot(pn2 %>% na.omit() %>% filter(taityo< 100), aes(x = taityo, y = total_number), stat = "identity")
+g = ggplot(pn2 %>% na.omit() %>% filter(taityo < 50), aes(x = taityo, y = total_number), stat = "identity")
 b = geom_bar(stat = "identity")
 f = facet_wrap(~ season, ncol = 1, scales = 'free')
 labs = labs(x = "Length", y = "Number", title = "Hachinohe")
@@ -397,13 +372,16 @@ g+b+f+labs+theme_bw()
 ao = pn2 %>% filter(taityo < 100) %>% mutate(weight = 0.00001867*(taityo*10)^3.068) %>% mutate(biomass = weight*total_number)
 total_ao = ddply(ao, .(season), summarize, total = sum(biomass)/1000)
 
-catch_mae = 121650.3+204768.5
-catch_usiro = 5501.8+6326.8
+(ddply(tai_hati, .(season), summarize, sum = sum(kg)))
+
+catch_mae = 58551+108677 #aomori+iwate?
+catch_usiro = 4105.3+44273.1
 
 total_ao = total_ao %>% mutate(catch = ifelse(total_ao$season == "1-6", catch_mae, catch_usiro)) %>% mutate(rate = catch/total)
 
 ao = left_join(ao, total_ao, by = "season") %>% mutate(number = rate*total_number)
 summary(ao)
+
 
 # Tohoku area ---------------------------------------------------
 # 宮城以南 = 福島茨城
@@ -430,7 +408,7 @@ levels(tohoku$area)
 tohoku$area = factor(tohoku$area, levels = c("岩手県以北", "宮城県以南"))
 summary(tohoku)
 
-g = ggplot(tohoku, aes(x = taityo, y = total_number/10000, fill = area))
+g = ggplot(tohoku %>% filter(taityo < 50), aes(x = taityo, y = total_number/10000, fill = area))
 b = geom_bar(stat = "identity", width = 0.5, colour = "black")
 lab = labs(x = "体長（cm）", y = "漁獲尾数 (万尾)", fill = "")
 col_catch = c("white", "grey0")
@@ -449,7 +427,6 @@ th = theme(panel.grid.major = element_blank(),
 fig9 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th
 +scale_x_continuous(expand = c(0,0), breaks=seq(2, 36, by = 2))+scale_y_continuous(expand = c(0,0),limits = c(0, 9))
 ggsave(file = "fig9.png", plot = fig9, units = "in", width = 11.69, height = 8.27)
-
 
 
 
