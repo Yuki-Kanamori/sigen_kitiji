@@ -241,18 +241,6 @@ summary(m_sosei)
 total_sosei = m_sosei %>% group_by(year, taityo, season) %>% dplyr::summarize(total_n = round2(mean(sum), 0))
 summary(total_sosei)
 
-# m_sosei = loop2 %>% group_by(year, taityo, season, times) %>% dplyr::summarize(mean = mean(number))
-# summary(m_sosei)
-# 
-# total_sosei = loop2 %>% group_by(year, taityo, season) %>% dplyr::summarize(mean = round2(mean(number), 0))
-# 
-# 
-# m_sosei = loop2 %>% group_by(year, taityo, tag) %>% dplyr::summarize(mean = round2(mean(count), 0))
-# summary(m_sosei)
-# m_sosei2 = left_join(m_sosei, tag_rate, by = 'tag')
-# total_sosei = m_sosei2 %>% mutate(total_n = mean*rate, month = as.numeric(str_sub(tag, 6, 7))) %>% mutate(season = ifelse(between(month, 1, 6), "1-6", "7-12"))
-# summary(total_sosei)
-
 # figures
 g = ggplot(total_sosei %>% filter(taityo < 80), aes(x = taityo, y = total_n), stat = "identity")
 b = geom_bar(stat = "identity")
