@@ -684,22 +684,3 @@ ggsave(file = "figa32.png", plot = figa32, units = "in", width = 11.69, height =
 
 
 
-
-g = ggplot(catch, aes(x = year, y = catch_t, fill = method))
-b = geom_bar(stat = "identity", width = 0.5, colour = "black")
-lab = labs(x = "年", y = "漁獲量 (トン)", fill = "漁業種")
-col_catch = c("grey50", "white", "grey0")
-c = scale_fill_manual(values = col_catch)
-th = theme(panel.grid.major = element_blank(),
-           panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
-           axis.title.x = element_text(size = rel(1.5)),
-           axis.title.y = element_text(size = rel(1.5)),
-           legend.title = element_blank(),
-           legend.text = element_text(size = rel(1.2)),
-           strip.text.x = element_text(size = rel(1.5)),
-           legend.position = c(0.85, 0.8),
-           legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
-fig5 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0), breaks=seq(1975, 2019, by = 2))+scale_y_continuous(expand = c(0,0),limits = c(0, 4000))
-ggsave(file = "fig5.png", plot = fig5, units = "in", width = 11.69, height = 8.27)
