@@ -947,6 +947,10 @@ z_abc = f_limit+M
 abc_limit = (f_limit*(1-exp(-z_abc)))/z_abc*total_biomass_next
 abc_target = (f_target*(1-exp(-z_abc)))/z_abc*total_biomass_next
 
+# re-estimation of ABC
+total_biomass_this = sum(abund_abc$biomass_est)
+(re_abc_limit = (f_limit*(1-exp(-z_abc)))/z_abc*total_biomass_this)
+(re_abc_target = (f_target*(1-exp(-z_abc)))/z_abc*total_biomass_this)
 
 
 
