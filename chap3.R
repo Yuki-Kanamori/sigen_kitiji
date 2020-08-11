@@ -110,14 +110,14 @@ region2 = subset(world_map, world_map$region == "Japan")
 local_map = map + geom_polygon(data = region2, aes(x = long, y = lat, group = group), colour = "black", fill = "white") + coord_map(xlim = c(140.5, 145.5), ylim = c(35, 43))
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
+           axis.text.x = element_text(size = rel(1.8), angle = 90, colour = "black"),
+           axis.text.y = element_text(size = rel(1.8), colour = "black"),
            axis.title.x = element_text(size = rel(1.5)),
            axis.title.y = element_text(size = rel(1.5)),
            strip.text.x = element_text(size = rel(1.5)),
            plot.title = element_text(size = rel(1.5)),
-           legend.title = element_text(size = rel(1.2)),
-           legend.text = element_text(size = rel(1.2)))
+           legend.title = element_text(size = rel(2)),
+           legend.text = element_text(size = rel(2)))
 # th = theme(panel.grid.major = element_blank(),
 #            panel.grid.minor = element_blank(),
 #            axis.text.x = element_text(size = rel(1.2), angle = 90),
@@ -137,10 +137,10 @@ fig4 = local_map+theme_bw(base_family = "HiraKakuPro-W3")+th+p+c+labs+
   geom_hline(yintercept = 39, colour="black", linetype = "dashed")+
   geom_hline(yintercept = 38, colour="black", linetype = "dashed")+
   geom_hline(yintercept = 36.5, colour="black", linetype = "dashed")+
-  annotate("text",label="尻屋崎", x=144.5, y=41, family="HiraKaku", size = 5)+
-  annotate("text",label="岩手", x=144.3, y=39.5, family="HiraKaku", size = 5)+
-  annotate("text",label="金華山", x=144.4, y=38.5, family="HiraKaku", size = 5)+
-  annotate("text",label="房総", x=144.3, y=37, family="HiraKaku", size = 5) 
+  annotate("text",label="尻屋崎", x=144.5, y=41, family="HiraKaku", size = 6)+
+  annotate("text",label="岩手", x=144.3, y=39.5, family="HiraKaku", size = 6)+
+  annotate("text",label="金華山", x=144.4, y=38.5, family="HiraKaku", size = 6)+
+  annotate("text",label="房総", x=144.3, y=37, family="HiraKaku", size = 6) 
 ggsave(file = "fig4.png", plot = fig4, units = "in", width = 8.27, height = 11.69)
 
 
@@ -476,13 +476,13 @@ col_catch = c("white", "grey0")
 c = scale_fill_manual(values = col_catch)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.2)),
+           axis.text.x = element_text(size = rel(1.8), angle = 90, colour = "black"),
+           axis.text.y = element_text(size = rel(1.8), colour = "black"),
            axis.title.x = element_text(size = rel(1.5)),
            axis.title.y = element_text(size = rel(1.5)),
            legend.title = element_blank(),
-           legend.text = element_text(size = rel(1.2)),
-           strip.text.x = element_text(size = rel(1.5)),
+           legend.text = element_text(size = rel(2)),
+           strip.text.x = element_text(size = rel(2)),
            legend.position = c(0.85, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
 fig9 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0), breaks=seq(2, 36, by = 2))+scale_y_continuous(expand = c(0,0),limits = c(0, 5))
@@ -510,8 +510,8 @@ lab = labs(x = "水深（m）", y = "資源密度", title = "(B)")
 f = facet_wrap(~ station_code, ncol = 2)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.5), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
+           axis.text.x = element_text(size = rel(1.8), angle = 90, colour = "black"),
+           axis.text.y = element_text(size = rel(1.8), colour = "black"),
            axis.title.x = element_text(size = rel(2)),
            axis.title.y = element_text(size = rel(2)),
            legend.title = element_blank(),
@@ -544,8 +544,8 @@ b = geom_bar(stat = "identity", width = 0.8, colour = "black", position = "dodge
 lab = labs(x = "体長（cm）", y = "資源尾数 (千尾)", title = "(C)")
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.5), angle = 90),
-           axis.text.y = element_text(size = rel(1.5)),
+           axis.text.x = element_text(size = rel(1.8), angle = 90, colour = "black"),
+           axis.text.y = element_text(size = rel(1.8), colour = "black"),
            axis.title.x = element_text(size = rel(2)),
            axis.title.y = element_text(size = rel(2)),
            legend.title = element_blank(),
@@ -633,7 +633,7 @@ ggsave(file = "figa31.png", plot = figa31, units = "in", width = 11.69, height =
 
 
 # ---------------------------------------------------------------
-# 3-56  補足図3-2; 年齢べつ隊長組成（調査） ---------------------------------
+# 3-56  補足図3-2; 年齢別体長組成（調査） ---------------------------------
 # ---------------------------------------------------------------
 age_comp = read.csv("age_composition.csv")
 age_comp = age_comp[-nrow(age_comp), -1]
@@ -677,13 +677,13 @@ c = scale_fill_manual(values = col_catch)
 f = facet_wrap(~ Year, ncol = 5)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.2), angle = 90),
-           axis.text.y = element_text(size = rel(1.2)),
+           axis.text.x = element_text(size = rel(1.8), angle = 90, colour = "black"),
+           axis.text.y = element_text(size = rel(1.8), colour = "black"),
            axis.title.x = element_text(size = rel(1.5)),
            axis.title.y = element_text(size = rel(1.5)),
            legend.title = element_blank(),
-           legend.text = element_text(size = rel(1.2)),
-           strip.text.x = element_text(size = rel(1.5)))
+           legend.text = element_text(size = rel(2)),
+           strip.text.x = element_text(size = rel(2)))
 figa32 = g+b+lab+c+f+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0), breaks=seq(0, 36, by = 5))+scale_y_continuous(expand = c(0,0))
 ggsave(file = "figa32.png", plot = figa32, units = "in", width = 11.69, height = 8.27)
 
