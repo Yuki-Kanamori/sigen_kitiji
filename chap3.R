@@ -112,12 +112,12 @@ th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
            axis.text.x = element_text(size = rel(1.8), angle = 90, colour = "black"),
            axis.text.y = element_text(size = rel(1.8), colour = "black"),
-           axis.title.x = element_text(size = rel(1.5)),
-           axis.title.y = element_text(size = rel(1.5)),
-           strip.text.x = element_text(size = rel(1.5)),
-           plot.title = element_text(size = rel(1.5)),
-           legend.title = element_text(size = rel(2)),
-           legend.text = element_text(size = rel(2)))
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
+           strip.text.x = element_text(size = rel(1.8)),
+           plot.title = element_text(size = rel(1.8)),
+           legend.title = element_text(size = rel(1.8)),
+           legend.text = element_text(size = rel(1.8)))
 # th = theme(panel.grid.major = element_blank(),
 #            panel.grid.minor = element_blank(),
 #            axis.text.x = element_text(size = rel(1.2), angle = 90),
@@ -478,11 +478,11 @@ th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
            axis.text.x = element_text(size = rel(1.8), angle = 90, colour = "black"),
            axis.text.y = element_text(size = rel(1.8), colour = "black"),
-           axis.title.x = element_text(size = rel(1.5)),
-           axis.title.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
            legend.title = element_blank(),
-           legend.text = element_text(size = rel(2)),
-           strip.text.x = element_text(size = rel(2)),
+           legend.text = element_text(size = rel(1.8)),
+           strip.text.x = element_text(size = rel(1.8)),
            legend.position = c(0.85, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
 fig9 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0), breaks=seq(2, 36, by = 2))+scale_y_continuous(expand = c(0,0),limits = c(0, 5))
@@ -515,9 +515,9 @@ th = theme(panel.grid.major = element_blank(),
            axis.title.x = element_text(size = rel(2)),
            axis.title.y = element_text(size = rel(2)),
            legend.title = element_blank(),
-           legend.text = element_text(size = rel(2)),
-           strip.text.x = element_text(size = rel(2)),
-           plot.title = element_text(size = rel(2)))
+           legend.text = element_text(size = rel(1.8)),
+           strip.text.x = element_text(size = rel(1.8)),
+           plot.title = element_text(size = rel(1.8)))
 figa31b = g+b+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_y_continuous(expand = c(0,0),limits = c(0, 25))
 # ggsave(file = "figa31b.png", plot = figa31b, units = "in", width = 11.69, height = 8.27)
 # bquote('Assimilation ('*mu~ 'mol' ~CO[2]~ m^-2~s^-1*')')
@@ -549,9 +549,9 @@ th = theme(panel.grid.major = element_blank(),
            axis.title.x = element_text(size = rel(2)),
            axis.title.y = element_text(size = rel(2)),
            legend.title = element_blank(),
-           legend.text = element_text(size = rel(2)),
-           strip.text.x = element_text(size = rel(2)),
-           plot.title = element_text(size = rel(2)),
+           legend.text = element_text(size = rel(1.8)),
+           strip.text.x = element_text(size = rel(1.8)),
+           plot.title = element_text(size = rel(1.8)),
            legend.position = c(0.1, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
 c = scale_fill_manual(values =  c("black", "white"))
@@ -602,12 +602,14 @@ japan2$long <- japan$long-0.01
 g <- ggplot(subset(tohoku[tohoku$depth<0 & tohoku$depth>=-1300,]),aes(long, lat))
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1), angle = 90),
-           axis.text.y = element_text(size = rel(1)),
-           axis.title.x = element_text(size = rel(1.5)),
-           axis.title.y = element_text(size = rel(1.5)),
-           strip.text.x = element_text(size = rel(2)),
-           plot.title = element_text(size = rel(1.5)))
+           axis.text.x = element_text(size = rel(1.8), angle = 90, colour = "black"),
+           axis.text.y = element_text(size = rel(1.8), colour = "black"),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
+           strip.text.x = element_text(size = rel(1.8)),
+           plot.title = element_text(size = rel(1.8)),
+           legend.title = element_text(size = rel(1.8)),
+           legend.text = element_text(size = rel(1.8)),)
 # th = theme(panel.grid.major = element_blank(),
 #            panel.grid.minor = element_blank(),
 #            axis.text.x = element_blank(),
@@ -679,11 +681,11 @@ th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
            axis.text.x = element_text(size = rel(1.8), angle = 90, colour = "black"),
            axis.text.y = element_text(size = rel(1.8), colour = "black"),
-           axis.title.x = element_text(size = rel(1.5)),
-           axis.title.y = element_text(size = rel(1.5)),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
            legend.title = element_blank(),
-           legend.text = element_text(size = rel(2)),
-           strip.text.x = element_text(size = rel(2)))
+           legend.text = element_text(size = rel(1.8)),
+           strip.text.x = element_text(size = rel(1.8)))
 figa32 = g+b+lab+c+f+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0), breaks=seq(0, 36, by = 5))+scale_y_continuous(expand = c(0,0))
 ggsave(file = "figa32.png", plot = figa32, units = "in", width = 11.69, height = 8.27)
 
