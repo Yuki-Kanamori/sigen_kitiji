@@ -439,12 +439,14 @@ summary(ao)
 
 
 # Tohoku area ---------------------------------------------------
-# 宮城以南 = 福島茨城
+# 宮城以南 = 福島茨城 => 間違いだった．宮城も足す
 # 岩手以北 = 青森岩手（ただし，岩手は漁獲量を使っているだけで，体長データはない）
 head(fukuiba)
+head(miyagi)
 head(ao)
 summary(ao)
 summary(fukuiba)
+summary(miyagi)
 
 # miya1 = ddply(tai_miya2, .(taityo), summarize, total_number = sum(mean))
 # miya2 = ddply(total_sosei, .(taityo), summarize, total_number = sum(total_n))
@@ -452,9 +454,13 @@ summary(fukuiba)
 # tohoku = rbind(miya1, miya2) %>% mutate(area = "宮城県以南")
 # tohoku = rbind(tohoku, aomori %>% mutate(area = "岩手県以北"))
 
-fukuiba2 = ddply(fukuiba, .(taityo), summarize, total_number = sum(sum))
+# fukuiba2 = ddply(fukuiba, .(taityo), summarize, total_number = sum(sum))
+fig2 = ddply(fig, .(taityo), summarize, total_number = sum(weight2))
 ao2 = ddply(ao, .(taityo), summarize, total_number = sum(total_number))
-tohoku = rbind(fukuiba2 %>% mutate(area = "宮城県以南"), ao2 %>% mutate(area = "岩手県以北"))
+# miyagi2 = ddply(miyagi %>% filter(pref == "Miyagi"), .(tayto), total_number = sum(sum))
+
+# tohoku = rbind(fukuiba2 %>% mutate(area = "宮城県以南"), ao2 %>% mutate(area = "岩手県以北"))
+tohoku = rbind(fig2 %>% mutate(area = "宮城県以南"), ao2 %>% mutate(area = "岩手県以北"))
 
 tohoku = ddply(tohoku, .(area, taityo), summarize, total_number = sum(total_number))
 
@@ -479,7 +485,7 @@ th = theme(panel.grid.major = element_blank(),
            strip.text.x = element_text(size = rel(1.5)),
            legend.position = c(0.85, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
-fig9 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0), breaks=seq(2, 36, by = 2))+scale_y_continuous(expand = c(0,0),limits = c(0, 4))
+fig9 = g+b+lab+c+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0), breaks=seq(2, 36, by = 2))+scale_y_continuous(expand = c(0,0),limits = c(0, 5))
 ggsave(file = "fig9.png", plot = fig9, units = "in", width = 11.69, height = 8.27)
 
 
