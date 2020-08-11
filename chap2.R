@@ -378,7 +378,7 @@ ggsave(file = "fig6.png", plot = fig6, units = "in", width = 11.69, height = 8.2
 
 
 # step 3; CPUE trend ----------------------------------------------------------
-gyo_old = read.csv("gyoseki_old.csv", fileEncoding = "CP932")
+gyo_old = read.csv("okisoko_old.csv", fileEncoding = "CP932")
 unique(gyo_old$method)
 
 okisoko = read.csv("okisoko.csv")
@@ -487,7 +487,7 @@ ggsave(file = "fig8.png", plot = fig8, units = "in", width = 8.27, height = 11.6
 
 
 # step 4; estimation of stock abundance (number & biomass) ---------------------------------------------------------
-olddata = read.csv("olddata_trawl_length.csv") 
+olddata = read.csv("olddata_trawl.csv") 
 
 # combine the catch data from the trawl surveys
 old_trawl = olddata %>% filter(data == 'trawl') %>% gather(key = year_tag, value = number, 2:(ncol(olddata)-1)) %>% mutate(year = as.numeric(str_sub(year_tag, 2, 5))) %>% select(-year_tag, -data)
@@ -841,7 +841,7 @@ ggsave(file = "fig12.png", plot = fig12, units = "in", width = 11.69, height = 8
 
 
 # step 5; estimation of stock abundance in North and South  (number & biomass) ---------------------------------------------------------
-ns = read.csv("trawl_ns_length.csv", fileEncoding = "CP932")
+ns = read.csv("trawl_N_at_length_ns.csv", fileEncoding = "CP932")
 summary(ns)
 ns[is.na(ns)] = 0
 ns = ns %>% dplyr::rename(year = 年, area = 南北) %>% gather(key = size_class, value = number, -c("year", "area"))
