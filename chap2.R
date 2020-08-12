@@ -217,6 +217,9 @@ catch_t3[is.na(catch_t3)] = 0
 effort_t1 = ddply(okisoko, .(method, area), summarize, sum = sum(effort)) %>% tidyr::spread(key = method, value = sum)
 effort_t1[is.na(effort_t1)] = 0
 
+effort_t2 = ddply(okisoko, .(pref, method, area), summarize, sum = sum(effort)) %>% tidyr::spread(key = area, value = sum)
+effort_t2[is.na(effort_t2)] = 0
+
 write.csv(catch_t1, "catch_t1.csv", fileEncoding = "CP932")
 write.csv(catch_t2, "catch_t2.csv", fileEncoding = "CP932")
 write.csv(catch_t3, "catch_t3.csv", fileEncoding = "CP932")
