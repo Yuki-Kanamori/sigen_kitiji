@@ -57,3 +57,33 @@ th = theme(panel.grid.major = element_blank(),
 sampling_bias = g+p+l+f+lab+theme_bw(base_family = "HiraKakuPro-W3")
 ggsave(file = "sampling_bias.png", plot = sampling_bias, units = "in", width = 11.69, height = 8.27)
 
+
+
+
+# re-check ------------------------------------------------------
+age_comp = read.csv("age_composition.csv")
+age_comp = age_comp[-nrow(age_comp), -1]
+age_comp = age_comp %>% gather(key = l, value = freq, 2:ncol(age_comp))
+age_comp = age_comp %>% mutate(size_class = as.numeric(str_sub(age_comp$l, 2,3))) %>% select(-l)
+
+len_num = read.csv("survey_N_at_length.csv", fileEncoding = "CP932") # with warning because of so long column
+len_num = len_num[, 16:ncol(len_num)] %>% mutate(site = c("N", "S"))
+len_num = len_num %>% gather(key = age_j, value = number, 1:(ncol(len_num)-1)) %>% na.omit() %>% mutate(size_class = as.numeric(str_sub(age_j, 3, 4)))
+surv_n_total = ddply(len_num, .(size_class), summarize, n_total = sum(number))
+
+head(age_comp)
+head(surv_n_total)
+age_comp = full_join(age_comp, surv_n_total, by = "size_class")
+age_comp = age_comp %>% mutate(number = freq*n_total) %>% filter(age > 0)
+
+
+old = read.csv("survey_N_at_age.csv")
+old = old %>% gather(key = l, value = number, 3:ncol(old))
+old = old %>% mutate(size_class = as.numeric(str_sub(old$l, 2, 4))) %>% select(-l)
+
+head(old)
+head(age_comp)
+now = age_comp %>% mutate(Age = ifelse(age_comp == 10, "10+", age_comp$age), Year = 2019) %>% select(Age, Year, size_class, number) 
+
+all = rbind(old, now)
+
