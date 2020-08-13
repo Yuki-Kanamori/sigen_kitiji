@@ -908,54 +908,62 @@ f_current = fishing_rate %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4
 
 # s_pre = Z %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1))
 # s_current = exp(-s_pre$z)
-s_current = exp(-(Z %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1)) %>% select(z)))
+# s_current = exp(-(Z %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1)) %>% select(z)))
+s_current = exp(-(f_current+M))
 
 # s1_pre = survival %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-1)-3), age == 2)
 # s1_current = mean(s1_pre$surv)
 s1_current = survival %>% filter(year > ((as.numeric(str_sub(Sys.Date(), 1, 4))-1)-3), age == 2) %>% summarize(mean(surv))
 
-number_2old_oct_last = trawl %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-1, age == 1) %>% select(number)/1000 * s1_current
+number_1old_oct_last = trawl %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-1, age == 1) %>% select(number)/1000 * s1_current
+number_2old_oct_last = number_1old_oct_last*s1_current
 number_2old_jan_this = number_2old_oct_last*survival_2month %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-1) %>% select(surv)
 
 number_2old_jan_this_sel = number_2old_jan_this/q %>% filter(year == as.numeric(str_sub(Sys.Date(), 1, 4))-1, age == 2) %>% select(q)
 
 # the estimated abundance in step 4
-abund_abc = est %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1)) %>% select(number, biomass, year, age) %>% dplyr::rename(number_est = number, biomass_est = biomass)
-abund_abc = left_join(abund_abc, weight %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1)), by = c("year", "age"))
+abund_abc = est %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4)))) %>% select(number, biomass, year, age) %>% dplyr::rename(number_est = number, biomass_est = biomass)
+abund_abc = left_join(abund_abc, weight %>% filter(year == (as.numeric(str_sub(Sys.Date(), 1, 4))-1)), by = c("age"))
 
 next_year = NULL
-for(i in 1:(length(abund_abc$age)-1)){
-  #i=1
+for(i in 1:(length(abund_abc$age))){
+  # i=1
   if(i == 1){
     temp = number_2old_jan_this_sel
     next_year = rbind(next_year, temp)
   }
-  if(i < (length(abund_abc$age)-1)){
-    temp = abund_abc$number_est[i]*s_current$z
-    next_year = rbind(next_year, temp)
+  if(i < length(abund_abc$age)){
+    temp = abund_abc$number_est[i-1]*s_current/1000
+    next_year = abind(next_year, temp, along = 1)
   }
-  if(i == (length(abund_abc$age)-1)){
-    temp = (abund_abc$number_est[i]+abund_abc$number_est[i+1])*s_current$z
-    next_year = rbind(next_year, temp)
+  if(i == length(abund_abc$age)){
+    temp = (abund_abc$number_est[i-1]+abund_abc$number_est[i])*s_current/1000
+    next_year = abind(next_year, temp, along = 1)
   }
 }
 
-abund_abc = abund_abc %>% mutate(next_year_number = next_year$number/1000) %>% mutate(next_year_biomass = next_year_number*weight/1000)
+abund_abc = abund_abc %>% mutate(next_year_number = next_year) %>% mutate(next_year_biomass = next_year_number*weight/1000)
 
 (total_number_next = sum(abund_abc$next_year_number))
 (total_biomass_next = sum(abund_abc$next_year_biomass))
 
-f_limit = 0.058
+f_limit = 0.0582
 f_target = f_limit*0.8
-z_abc = f_limit+M
+#f_target = 0.047
+# z_abc = f_limit+M
 
-abc_limit = (f_limit*(1-exp(-z_abc)))/z_abc*total_biomass_next
-abc_target = (f_target*(1-exp(-z_abc)))/z_abc*total_biomass_next
+(abc_limit = ((f_limit*(1-exp(-(f_limit+M))))/(M+f_limit))*total_biomass_next)
+(abc_target = ((f_target*(1-exp(-(f_target+M))))/(M+f_target))*total_biomass_next)
+
+(f_target-f_current)*100/f_current
+(f_limit-f_current)*100/f_current
+abc_target/total_biomass_next*100
+abc_limit/total_biomass_next*100
 
 # re-estimation of ABC
 total_biomass_this = sum(abund_abc$biomass_est)
-(re_abc_limit = (f_limit*(1-exp(-z_abc)))/z_abc*total_biomass_this)
-(re_abc_target = (f_target*(1-exp(-z_abc)))/z_abc*total_biomass_this)
+(re_abc_limit = ((f_limit*(1-exp(-(f_limit+M))))/(M+f_limit))*total_biomass_this)
+(re_abc_target = ((f_target*(1-exp(-(f_target+M))))/(M+f_target))*total_biomass_this)
 
 
 
