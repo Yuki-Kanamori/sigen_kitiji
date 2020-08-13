@@ -731,7 +731,7 @@ high = max(trend$total)-(max(trend$total)-min(trend$total))*1/3
 g = ggplot(trend, aes(x = year, y = total/1000))
 p = geom_point(shape = 20, size = 6)
 l = geom_line(size = 0.6, linetype = "solid")
-lab = labs(x = "年", y = "資源量（千トン）", shape = "")
+lab = labs(x = "年", y = "資源量（トン）", shape = "")
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
            axis.text.x = element_text(size = rel(1.8), angle = 90, colour = "black"),
@@ -746,6 +746,8 @@ fig10 = g+p+l+lab+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.positio
 ggsave(file = "fig10.png", plot = fig10, units = "in", width = 11.69, height = 8.27)
 
 
+check_trend = trend %>% filter(year > 2015)
+summary(lm(total/1000 ~ year, data = check_trend))
 
 ### year trend of stock number (fig. 11)
 est = est %>% mutate(age2 = ifelse(age > 4, "5歳以上", "2-4歳"))
