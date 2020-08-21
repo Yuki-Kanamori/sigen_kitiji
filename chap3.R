@@ -44,25 +44,6 @@ require(investr)
 require(stringr)
 require(gridExtra)
 require(ggrepel)
-
-# please change here -----------------------------------------------------------
-# set working directory
-# setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/森川さん由来/R01d_キチジ資源評価")
-
-# # how many years ago
-# # e.g. wanna analyze the data of 2018 and now is 2020, then n = 2
-# n = 2
-
-
-# 3-1 図4: 漁場の空間分布 --------------------------------------------------------------
-# load the packages -------------------------------------------------------
-require(tidyr)
-require(dplyr)
-require(plyr)
-require(ggplot2)
-require(maps)
-require(mapdata)
-require(stringr)
 require(cowplot)
 
 
@@ -70,10 +51,6 @@ require(cowplot)
 # set working directory
 setwd("/Users/Yuki/Dropbox/業務/キチジ太平洋北部/SA2020")
 
-# lonlat = read.delim("Map.txt", header=T)
-# lonlat2 = read.table("キアンコウ緯度経度.txt", header=T, fileEncoding = "CP932")
-# 
-# gyoseki_2years_ago = read.table("kitiji_gyoseki2018.txt", header=T)
 
 ###10進法で、LONGとLATのみ。列名もLONGとLATにしてください###
 x <- read.delim("Map.txt", header=T)
@@ -672,7 +649,7 @@ mode(all$size_class)
 summary(all)
 
 g = ggplot(all, aes(x = size_class, y = number/1000000, fill = age))
-b = geom_bar(stat = "identity", width = 0.5, colour = "black", size = 0.5)
+b = geom_bar(stat = "identity", width = 0.8, colour = "black", size = 0.5)
 lab = labs(x = "体長 (cm)", y = "資源尾数 (百万尾)", fill = "年齢")
 col_catch = c("red1", "red1", "darkorange", "goldenrod1", "goldenrod4", "grey60", "palegreen3", "palegreen4", "steelblue3", "steelblue4", "grey60")
 c = scale_fill_manual(values = col_catch)
