@@ -969,7 +969,7 @@ total_biomass_this = sum(abund_abc$biomass_est)
 
 
 
-# step 6; spawner-recruitment relationship ----------------------
+# step 7; spawner-recruitment relationship ----------------------
 summary(ns)
 # test = ddply(ns, .(year, size_class, size), summarize, number = sum(number)/0.3)
 
@@ -1089,6 +1089,20 @@ ggsave(file = "fig15.png", plot = fig15, units = "in", width = 11.69, height = 8
 
 
 
+g = ggplot(biomass_female, aes(x = year2, y = biomass/1000000))
+p = geom_point(shape = 20, size = 6)
+l = geom_line(size = 0.6, linetype = "solid")
+lab = labs(x = "年", y = "雌親魚量（トン）", shape = "")
+th = theme(panel.grid.major = element_blank(),
+           panel.grid.minor = element_blank(),
+           axis.text.x = element_text(size = rel(1.8), angle = 90, colour = "black"),
+           axis.text.y = element_text(size = rel(1.8), colour = "black"),
+           axis.title.x = element_text(size = rel(2)),
+           axis.title.y = element_text(size = rel(2)),
+           legend.title = element_text(size = rel(1.8)),
+           strip.text.x = element_text(size = rel(1.8)))
+fig42 = g+p+l+lab+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1996, 2020, by = 2), expand = c(0.03, 0.03))
+ggsave(file = "fig42.png", plot = fig42, units = "in", width = 11.69, height = 8.27)
 
 
 # -------------------------------------------------------------------------
