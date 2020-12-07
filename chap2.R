@@ -424,12 +424,12 @@ lab = labs(x = "年", y = "CPUE  (kg/網)", shape = "")
 f = facet_wrap(~ label, ncol = 1)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.8), angle = 90, colour = "black"),
-           axis.text.y = element_text(size = rel(1.8), colour = "black"),
+           axis.text.x = element_text(size = rel(1.5), angle = 90, colour = "black"),
+           axis.text.y = element_text(size = rel(1.5), colour = "black"),
            axis.title.x = element_blank(),
-           axis.title.y = element_text(size = rel(2)),
-           legend.title = element_text(size = rel(1.8)),
-           strip.text.x = element_text(size = rel(1.8)))
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_text(size = rel(1.5)),
+           strip.text.x = element_text(size = rel(1.5)))
 kake = g+l+p+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 2), expand=c(0, 0.5))+scale_y_continuous(limits = c(0, 60))
 
 ### 2そう
@@ -440,12 +440,12 @@ lab = labs(x = "年", y = "CPUE  (kg/網)", shape = "")
 f = facet_wrap(~ label, ncol = 1)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.8), angle = 90, colour = "black"),
-           axis.text.y = element_text(size = rel(1.8), colour = "black"),
+           axis.text.x = element_text(size = rel(1.5), angle = 90, colour = "black"),
+           axis.text.y = element_text(size = rel(1.5), colour = "black"),
            axis.title.x = element_blank(),
-           axis.title.y = element_text(size = rel(2)),
-           legend.title = element_text(size = rel(1.8)),
-           strip.text.x = element_text(size = rel(1.8)))
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_text(size = rel(1.5)),
+           strip.text.x = element_text(size = rel(1.5)))
 niso = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 2), expand = c(0, 0.5))+scale_y_continuous(limits = c(0, 300))
 
 ### トロール
@@ -456,12 +456,12 @@ lab = labs(x = "年", y = "CPUE  (kg/網)", shape = "")
 f = facet_wrap(~ label, ncol = 1)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.8), angle = 90, colour = "black"),
-           axis.text.y = element_text(size = rel(1.8), colour = "black"),
+           axis.text.x = element_text(size = rel(1.5), angle = 90, colour = "black"),
+           axis.text.y = element_text(size = rel(1.5), colour = "black"),
            axis.title.x = element_blank(),
-           axis.title.y = element_text(size = rel(2)),
-           legend.title = element_text(size = rel(1.8)),
-           strip.text.x = element_text(size = rel(1.8)))
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_text(size = rel(1.5)),
+           strip.text.x = element_text(size = rel(1.5)))
 tra = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 2), expand=c(0, 0.5))+scale_y_continuous(limits = c(0, 120))
 
 ### weighted CPUE
@@ -473,12 +473,12 @@ lab = labs(x = "年", y = "重み付CPUE \n（相対値）", shape = "")
 f = facet_wrap(~ label, ncol = 1)
 th = theme(panel.grid.major = element_blank(),
            panel.grid.minor = element_blank(),
-           axis.text.x = element_text(size = rel(1.8), angle = 90, colour = "black"),
-           axis.text.y = element_text(size = rel(1.8), colour = "black"),
-           axis.title.x = element_text(size = rel(2)),
-           axis.title.y = element_text(size = rel(2)),
-           legend.title = element_text(size = rel(1.8)),
-           strip.text.x = element_text(size = rel(1.8)))
+           axis.text.x = element_text(size = rel(1.5), angle = 90, colour = "black"),
+           axis.text.y = element_text(size = rel(1.5), colour = "black"),
+           axis.title.x = element_text(size = rel(1.5)),
+           axis.title.y = element_text(size = rel(1.5)),
+           legend.title = element_text(size = rel(1.5)),
+           strip.text.x = element_text(size = rel(1.5)))
 w = g+p+l+lab+f+theme_bw(base_family = "HiraKakuPro-W3")+ theme(legend.position = 'none')+th+theme(legend.position = 'none')+scale_x_continuous(breaks=seq(1972, 2019, by = 2), expand=c(0, 0.5))+scale_y_continuous(limits = c(0, 3))
 
 fig8 = grid.arrange(kake, niso, tra, w, ncol = 1)
@@ -1034,7 +1034,7 @@ th = theme(panel.grid.major = element_blank(),
            strip.text.x = element_text(size = rel(1.8)),
            legend.position = c(0.1, 0.8),
            legend.background = element_rect(fill = "white", size = 0.4, linetype = "solid", colour = "black"))
-ko = g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2017, by = 2), expand = c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 100))
+ko = g+l+p+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(breaks=seq(1996, 2017, by = 2), expand = c(0, 0.5))+scale_y_continuous(expand = c(0,0),limits = c(0, 101))
 
 g = ggplot(srr %>% na.omit(), aes(x = year2, y = biomass/1000000))
 p = geom_point(size = 5)
@@ -1078,7 +1078,7 @@ th = theme(panel.grid.major = element_blank(),
 
 # g+p+pa+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0),limits = c(0, 6000))+scale_y_continuous(expand = c(0,0),limits = c(0, 100))+geom_text(aes(x = biomass/1000000+1, label = year3), size = rel(2.8), hjust = 2)
 
-fig15 = g+p+pa+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0),limits = c(0, 5800))+scale_y_continuous(expand = c(0,0),limits = c(0, 100))+annotate("text", x = 350, y = 3, label = "1996", size = 6)+annotate("text", x = 5000, y = 5, label = "2017", size = 6)
+fig15 = g+p+pa+lab+theme_bw(base_family = "HiraKakuPro-W3")+th+scale_x_continuous(expand = c(0,0),limits = c(0, 5800))+scale_y_continuous(expand = c(0,0),limits = c(0, 101))+annotate("text", x = 350, y = 3, label = "1996", size = 6)+annotate("text", x = 5000, y = 5, label = "2017", size = 6)
 
 
 # +geom_text_repel(size = 5)
