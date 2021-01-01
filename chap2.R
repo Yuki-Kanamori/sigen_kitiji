@@ -521,7 +521,7 @@ old_catchF = olddata %>% filter(data == 'catch_fisheries') %>% gather(key = year
 catch2019 = data.frame(catch = sum(okisoko$漁獲量の合計)/1000, year = 2019)
 catchF = rbind(old_catchF, catch2019)
 summary(catchF)
-
+write.csv(catchF, "catchF.csv")
 
 
 ### survival rate at age
