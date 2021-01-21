@@ -18,10 +18,13 @@ df$length_class = df$`体長（ｍｍ）`%/%10
 df$serial_number = rep(1:nrow(df))
 summary(df)
 
+df1 = df %>% select(-備考) %>% na.omit()
+summary(df1)
+
 check = df %>% select(length_class, NS, serial_number) %>% dplyr::group_by(NS, length_class) %>% dplyr::summarize(count = n())
 
 NS = c("N", "S")
-df2 = df %>% select(length_class, NS, serial_number) %>% na.omit()
+df2 = df1 %>% select(length_class, NS, serial_number) %>% na.omit()
 pick = NULL
 for(i in NS){
   data = df2 %>% filter(NS == i)
@@ -79,7 +82,7 @@ rcheck4 = pick3 %>% dplyr::group_by(length_class) %>% dplyr::summarize(count = n
 sum(pick3$pickup2) #344
 
 colnames(df)
-df = df[, -12]
+# df = df[, -12]
 df2 = left_join(df, pick %>% select(serial_number, pickup), by = "serial_number")
 df2 = left_join(df2, pick3 %>% select(serial_number, pickup2), by = "serial_number")
 
@@ -88,3 +91,5 @@ write.csv(df2, "df2.csv", fileEncoding = "CP932")
 
 sum(df2 %>% filter(pickup == 1) %>% select(pickup))
 sum(df2 %>% filter(priority == 1) %>% select(priority))
+
+write.csv(rcheck4, "rcheck4.csv")
